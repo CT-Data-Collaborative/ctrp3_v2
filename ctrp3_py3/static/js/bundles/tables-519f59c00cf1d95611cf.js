@@ -26210,7 +26210,7 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 
   trafficStopTable(data) {
     if (this.state.display['Traffic Stops'] == true) {
-      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["c" /* buildStopTable */])(data['Traffic Stops']);
+      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["g" /* buildStopTable */])(data['Traffic Stops']);
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
     }
@@ -26218,7 +26218,7 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 
   stopEnforcementTable(data) {
     if (this.state.display['Stop Enforcement Method'] == true) {
-      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["b" /* buildStopEnforcementMethodTable */])(data['Stop Enforcement Method']);
+      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["f" /* buildStopEnforcementMethodTable */])(data['Stop Enforcement Method']);
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
     }
@@ -26226,7 +26226,7 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 
   natureOfStopsTable(data) {
     if (this.state.display['Nature of the Traffic Stop'] == true) {
-      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["a" /* buildNatureOfStopTable */])(data['Nature of the Traffic Stop']);
+      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["c" /* buildNatureOfStopTable */])(data['Nature of the Traffic Stop']);
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
     }
@@ -26234,7 +26234,7 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 
   stopsByMonthTable(data) {
     if (this.state.display['Stops by Month'] == true) {
-      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["e" /* buildStopsByMonthTable */])(data['Stops by Month']);
+      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["i" /* buildStopsByMonthTable */])(data['Stops by Month']);
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
     }
@@ -26242,12 +26242,43 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 
   stopsByHourTable(data) {
     if (this.state.display['Stops by Hour'] == true) {
-      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["d" /* buildStopsByHourTable */])(data['Stops by Hour']);
+      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["h" /* buildStopsByHourTable */])(data['Stops by Hour']);
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
     }
   }
 
+  ageOfDriverTable(data) {
+    if (this.state.display['Age of the Driver'] == true) {
+      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["a" /* buildAgeOfDriverTable */])(data['Age of the Driver']);
+    } else {
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
+    }
+  }
+
+  dispositionTable(data) {
+    if (this.state.display['Disposition of the Traffic Stop'] == true) {
+      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["b" /* buildDispositionTable */])(data['Disposition of the Traffic Stop']);
+    } else {
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
+    }
+  }
+
+  residencyTable(data) {
+    if (this.state.display['Residency Information'] == true) {
+      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["d" /* buildResidencyTable */])(data['Residency Information']);
+    } else {
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
+    }
+  }
+
+  searchInformationTable(data) {
+    if (this.state.display['Search Information'] == true) {
+      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["e" /* buildSearchInformationTable */])(data['Search Information']);
+    } else {
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
+    }
+  }
   componentWillReceiveProps(nextProps) {
     let display = {};
 
@@ -26260,21 +26291,6 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
     });
 
     this.setState({ display });
-  }
-
-  displayList() {
-    const display = this.state.display;
-    return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-      'ul',
-      null,
-      Object.keys(display).map(l => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-        'li',
-        { key: l },
-        l,
-        ': ',
-        display[l] ? 'True' : 'False'
-      ))
-    );
   }
 
   render() {
@@ -26290,7 +26306,11 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
       this.stopEnforcementTable(this.props.apiData),
       this.natureOfStopsTable(this.props.apiData),
       this.stopsByMonthTable(this.props.apiData),
-      this.stopsByHourTable(this.props.apiData)
+      this.stopsByHourTable(this.props.apiData),
+      this.ageOfDriverTable(this.props.apiData),
+      this.dispositionTable(this.props.apiData),
+      this.residencyTable(this.props.apiData),
+      this.searchInformationTable(this.props.apiData)
     );
   }
 }
@@ -26302,12 +26322,15 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (immutable) */ __webpack_exports__["c"] = buildStopTable;
-/* harmony export (immutable) */ __webpack_exports__["b"] = buildStopEnforcementMethodTable;
-/* harmony export (immutable) */ __webpack_exports__["d"] = buildStopsByHourTable;
-/* harmony export (immutable) */ __webpack_exports__["e"] = buildStopsByMonthTable;
-/* unused harmony export buildResidencyTable */
-/* harmony export (immutable) */ __webpack_exports__["a"] = buildNatureOfStopTable;
+/* harmony export (immutable) */ __webpack_exports__["g"] = buildStopTable;
+/* harmony export (immutable) */ __webpack_exports__["f"] = buildStopEnforcementMethodTable;
+/* harmony export (immutable) */ __webpack_exports__["h"] = buildStopsByHourTable;
+/* harmony export (immutable) */ __webpack_exports__["i"] = buildStopsByMonthTable;
+/* harmony export (immutable) */ __webpack_exports__["d"] = buildResidencyTable;
+/* harmony export (immutable) */ __webpack_exports__["c"] = buildNatureOfStopTable;
+/* harmony export (immutable) */ __webpack_exports__["a"] = buildAgeOfDriverTable;
+/* harmony export (immutable) */ __webpack_exports__["b"] = buildDispositionTable;
+/* harmony export (immutable) */ __webpack_exports__["e"] = buildSearchInformationTable;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_table__ = __webpack_require__(545);
@@ -26437,6 +26460,154 @@ function buildNatureOfStopTable(data) {
       'accessor': d => d['Motor Vehicle']['percent']
     }]
   }];
+
+  return makeTable(columns, data);
+}
+
+function buildAgeOfDriverTable(data) {
+  const columns = [{
+    Header: '',
+    accessor: 'race/ethnicity'
+  }, {
+    Header: '16 to 25',
+    columns: [{
+      'Header': 'Stops',
+      'id': 'count16',
+      'accessor': d => d['16 to 25']['count']
+    }, {
+      'Header': 'Percent',
+      'id': 'percent16',
+      'accessor': d => d['16 to 25']['percent']
+    }]
+  }, {
+    Header: '25 to 40',
+    columns: [{
+      'Header': 'Stops',
+      'id': 'count25',
+      'accessor': d => d['25 to 40']['count']
+    }, {
+      'Header': 'Stops',
+      'id': 'percent25',
+      'accessor': d => d['25 to 40']['percent']
+    }]
+  }, {
+    Header: '40 to 60',
+    columns: [{
+      'Header': 'Stops',
+      'id': 'count40',
+      'accessor': d => d['40 to 60']['count']
+    }, {
+      'Header': 'Stops',
+      'id': 'percent40',
+      'accessor': d => d['40 to 60']['percent']
+    }]
+  }, {
+    Header: '60+',
+    columns: [{
+      'Header': 'Stops',
+      'id': 'count60',
+      'accessor': d => d['60+']['count']
+    }, {
+      'Header': 'Stops',
+      'id': 'percent60',
+      'accessor': d => d['60+']['percent']
+    }]
+  }];
+
+  return makeTable(columns, data);
+}
+
+function buildDispositionTable(data) {
+  const columns = [{
+    Header: '',
+    accessor: 'race/ethnicity'
+  }, {
+    Header: 'UAR',
+    columns: [{
+      'Header': 'Stops',
+      'id': 'countUAR',
+      'accessor': d => d['UAR']['count']
+    }, {
+      'Header': 'Percent',
+      'id': 'percentUAR',
+      'accessor': d => d['UAR']['percent']
+    }]
+  }, {
+    Header: 'Mis. Summons',
+    columns: [{
+      'Header': 'Stops',
+      'id': 'countSum',
+      'accessor': d => d['Mis. Summons']['count']
+    }, {
+      'Header': 'Percent',
+      'id': 'percentSum',
+      'accessor': d => d['Mis. Summons']['percent']
+    }]
+  }, {
+    Header: 'Infraction',
+    columns: [{
+      'Header': 'Stops',
+      'id': 'countInf',
+      'accessor': d => d['Infraction']['count']
+    }, {
+      'Header': 'Percent',
+      'id': 'percentInf',
+      'accessor': d => d['Infraction']['percent']
+    }]
+  }, {
+    Header: 'Written Warning',
+    columns: [{
+      'Header': 'Stops',
+      'id': 'countWarn',
+      'accessor': d => d['Written Warning']['count']
+    }, {
+      'Header': 'Percent',
+      'id': 'percentWarn',
+      'accessor': d => d['Written Warning']['percent']
+    }]
+  }, {
+    Header: 'Verbal Warning',
+    columns: [{
+      'Header': 'Stops',
+      'id': 'countVWarn',
+      'accessor': d => d['Verbal Warning']['count']
+    }, {
+      'Header': 'Percent',
+      'id': 'percentVWarn',
+      'accessor': d => d['Verbal Warning']['percent']
+    }]
+  }];
+
+  return makeTable(columns, data);
+}
+
+function columnHelper(column_list) {
+  let columns = [{
+    Header: '',
+    accessor: 'race/ethnicity'
+  }];
+  column_list.forEach(column_name => {
+    let column = {
+      Header: column_name,
+      columns: [{
+        'Header': 'Stops',
+        'id': column_name + 'count',
+        'accessor': d => d[column_name]['count']
+      }, {
+        'Header': 'Percent',
+        'id': column_name + 'percent',
+        'accessor': d => d[column_name]['percent']
+      }]
+    };
+    columns.push(column);
+  });
+
+  return columns;
+}
+
+function buildSearchInformationTable(data) {
+  const column_names = ['Cars Searched', 'Consent', 'Inventory', 'Other', 'Contraband Found'];
+  const columns = columnHelper(column_names);
 
   return makeTable(columns, data);
 }

@@ -119,18 +119,7 @@ def traffic_stops_json_view(request):
 
 def search_information_json_view(request):
     if request:
-        #data = {}
-        info = StopRecord.objects.search_information(**request.GET)
-        try:
-            if info[0]['Results'] == 'No Results Found':
-                return JSONResponse(info)
-        except KeyError:
-            pass
-        justification = StopRecord.objects.search_justification(**request.GET)
-        contraband = StopRecord.objects.contraband_found(**request.GET)
-        data = info['total'] + justification['total'] + contraband['total'] + \
-               info['race'] + justification['race'] + contraband['race'] + \
-               info['ethnicity'] + justification['ethnicity'] + contraband['ethnicity']
+        data = list(StopRecord.objects.search_information(**request.GET))
     else:
         data = 'fail'
     return JSONResponse(data)
@@ -141,26 +130,3 @@ def search_authority_json_view(request):
     else:
         data = 'fail'
     return JSONResponse(data)
-
-def scatter_statutory_by_disposition_json_view(request):
-    if request:
-        data = StopRecord.objects.scatter_statutory_by_disposition(**request.GET)
-    else:
-        data = 'fail'
-    return JSONResponse(data)
-
-def scatter_disposition_by_statutory_justification_json_view(request):
-    if request:
-        data = StopRecord.objects.scatter_disposition_by_statutory(**request.GET)
-    else:
-        data = 'fail'
-    return JSONResponse(data)
-
-def scatter_contraband_by_searches_json_view(request):
-    if request:
-        data = StopRecord.objects.scatter_contraband_by_searches(**request.GET)
-    else:
-        data = 'fail'
-    return JSONResponse(data)
-
-

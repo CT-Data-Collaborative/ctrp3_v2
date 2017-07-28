@@ -1,11 +1,11 @@
     # reports / queryset_helpers.py
 from datetime import datetime,timedelta
-from itertools import product
+from itertools import product, chain
 from collections import defaultdict, OrderedDict
 from functools import reduce
 
 from django.db import models
-from django.db.models import Avg, Count, Sum, Q
+from django.db.models import Avg, Count, Sum, Q, Value, CharField
 from django.db import connection
 from django.urls import reverse_lazy
 
@@ -13,10 +13,22 @@ import operator
 import calendar
 import maya
 
+race_choices = {'A': "Asian Non-Hispanic", "B": "Black Non-Hispanic", "I": "Indian American / Alaskan Native Non-Hispanic", 'W': "White Non-Hispanic"}
+race_list = ['Asian Non-Hispanic', 'Black Non-Hispanic', 'Indian American / Alaskan Native Non-Hispanic', 'White Non-Hispanic']
+ethnicity_choices = {'H': "Hispanic", "M": "Middle Eastern", "N": "Not Applicable"}
+ethnicity_list = ['Hispanic', 'Middle Eastern', 'Not Applicable']
+RACE_AND_ETHNICITY_ROWS = ['Total', 'White Non-Hispanic', 'Black Non-Hispanic', 'Asian Non-Hispanic',
+                      'Indian American / Alaskan Native Non-Hispanic', 'Hispanic']
+
+
 def format_month(date_str):
+    if date_str is None:
+        return 'No Month Recorded'
     return f'{calendar.month_name[date_str.month]} {date_str.year}'
 
 def format_hour(start):
+    if start is None:
+        return 'No Hour Recorded'
     end = start + 1
     if start >= 12 and start < 24:
         start_str = "PM"
@@ -36,6 +48,63 @@ def format_hour(start):
         end = end % 12
     return f'{int(start)}{start_str} to {int(end)}{end_str}'
 
+def exclude_age_function(row):
+    if row['age_bucket'] == 5:
+        return True
+    else:
+        return False
+
+def structure_results(totals_qs, race_qs, ethnicity_qs, final_data_container, totals_lookup, column_getter, exclude=None, count_key=None):
+
+    all_results = list(chain(totals_qs, race_qs, ethnicity_qs))
+
+    for row in all_results:
+        if exclude:
+            if exclude(row):
+                continue
+
+        if count_key:
+            count = row[count_key]
+        else:
+            count = row['count']
+
+        col_val = column_getter(row)
+
+        if 'subject_race_code' in row:
+            race_ethnicity = race_choices[row['subject_race_code']]
+        elif 'subject_ethnicity_code' in row:
+            race_ethnicity = ethnicity_choices[row['subject_ethnicity_code']]
+        else:
+            race_ethnicity = 'Total'
+        total = totals_lookup[race_ethnicity]
+        percent = round(count / total * 100, 1)
+        try:
+            final_data_container[race_ethnicity][col_val]['count'] = count
+            final_data_container[race_ethnicity][col_val]['percent'] = percent
+        except KeyError:
+            pass
+
+    return final_data_container
+
+def build_total_lookup(total_count, totals_by_race, totals_by_ethnicity):
+    totals_lookup = {'Total': total_count}
+    for t in totals_by_race:
+        race = race_choices[t['subject_race_code']]
+        totals_lookup[race] = t['count']
+    for t in totals_by_ethnicity:
+        ethnicity = ethnicity_choices[t['subject_ethnicity_code']]
+        totals_lookup[ethnicity] = t['count']
+    return totals_lookup
+
+def build_final_data_container(column_list):
+    final_data_container = OrderedDict()
+    for r in RACE_AND_ETHNICITY_ROWS:
+        row = {'race/ethnicity': r}
+        for c in column_list:
+            row[c] = {'count': -999, 'percent': -999}
+        final_data_container[r] = row
+    return final_data_container
+
 def build_api_links():
     """Generates a list of dicts containing a descriptive name and url for api view urls.
 
@@ -48,7 +117,7 @@ def build_api_links():
         ('Age of the Driver', 'stops_by_age'),
         ('Search Information', 'search_information'),
         ('Disposition of the Traffic Stop', 'disposition'),
-        ('Statutory Authority Cited for Stop', 'search_authority'),
+        ('Statutory Authority Cited for Stop', 'stop_authority'),
         ('Residency Information', 'residency'),
         ('Stops by Month', 'stops_by_month'),
         ('Stops by Hour', 'stops_by_hour')
@@ -58,10 +127,7 @@ def build_api_links():
     for name in url_names:
         links[name[0]] = reverse_lazy(f'reports:{name[1]}').__str__()
 
-    # links = [{'name': name[0], 'url': reverse_lazy(f'reports:{name[1]}').__str__()} for name in url_names]
-
     return links
-
 
 def build_month_list(start, end, humanize=False):
     months_choices = [start]
@@ -142,15 +208,12 @@ class DepartmentQueryset(models.QuerySet):
             grouped_departments[department_type].append({'name': dept.department_name, 'type': department_type})
         return grouped_departments
 
-race_choices = {'A': "Asian Non-Hispanic", "B": "Black Non-Hispanic", "I": "Indian American / Alaskan Native Non-Hispanic", 'W': "White Non-Hispanic"}
-race_list = ['Asian Non-Hispanic', 'Black Non-Hispanic', 'Indian American / Alaskan Native Non-Hispanic', 'White Non-Hispanic']
-ethnicity_choices = {'H': "Hispanic", "M": "Middle Eastern", "N": "Not Applicable"}
-ethnicity_list = ['Hispanic', 'Middle Eastern', 'Not Applicable']
-datastructure_list = ['Total', 'White Non-Hispanic', 'Black Non-Hispanic', 'Asian Non-Hispanic',
-                      'Indian American / Alaskan Native Non-Hispanic', 'Hispanic']
 
 class StopsQueryset(models.QuerySet):
+
+    # TODOS Refactor traffic_stops, stop_enforcement to use new query structure
     def traffic_stops(self, **kwargs):
+
         q_list = qb(**kwargs)
         column_list = ["Traffic Stops"]
         sex_code_dict = {'M': 'Male', 'F': 'Female'}
@@ -223,359 +286,459 @@ class StopsQueryset(models.QuerySet):
         return l
 
     def resident(self, **kwargs):
-        q_list = qb(**kwargs)
-        if q_list:
-            total_count = self.filter(reduce(operator.and_,q_list)).exclude(state_resident=None).count()
-            if total_count == 0:
-                return [{'Results': 'No Results Found'}]
-            qs = self.filter(reduce(operator.and_,q_list)).filter(state_resident=True).count()
-        else:
-            total_count = self.exclude(state_resident=None).count()
-            qs = self.filter(state_resident=True).count()
-        l = [{'column': 'CT Resident', 'count': qs, 'percent': round(100.0*(1.0*qs) / total_count, 1)}]
-        return l
+        query_parameters = qb(**kwargs)
+
+        try:
+            filtered_partial = self.filter(reduce(operator.and_, query_parameters))
+        except TypeError:
+            filtered_partial = self
+
+
+        total_count = filtered_partial.exclude(state_resident=None).count()
+        if total_count == 0:
+            return [{'column': 'CT Resident', 'count': -999, 'percent': -999}]
+
+        resident_count = filtered_partial.filter(state_resident=True).count()
+
+        final_results = [{'column': 'CT Resident',
+                          'count': resident_count,
+                          'percent': round(100*resident_count / total_count, 1)}]
+
+        return final_results
 
     def town_resident(self, **kwargs):
-        q_list = qb(**kwargs)
-        if q_list:
-            total_count = self.filter(reduce(operator.and_,q_list)).exclude(town_resident=None).count()
-            if total_count == 0:
-                return [{'Results': 'No Results Found'}]
-            qs = self.filter(reduce(operator.and_,q_list)).filter(town_resident=True).count()
-        else:
-            total_count = self.exclude(town_resident=None).count()
-            qs = self.filter(town_resident=True).count()
-        l = [{'column': 'Town/City Resident', 'count': qs, 'percent': round(100.0*(1.0*qs) / total_count, 1)}]
-        return l
+        query_parameters = qb(**kwargs)
+
+        try:
+            filtered_partial = self.filter(reduce(operator.and_, query_parameters))
+        except TypeError:
+            filtered_partial = self
+
+        total_count = filtered_partial.exclude(town_resident=None).count()
+        if total_count == 0:
+            return [{'column': 'Town/City Resident', 'count': -999, 'percent': -999}]
+        resident_count = filtered_partial.filter(town_resident=True).count()
+
+        final_results = [{'column': 'Town/City Resident',
+                          'count': resident_count,
+                          'percent': round(100*resident_count / total_count, 1)}]
+        return final_results
 
     def nature_of_stops(self, **kwargs):
-        reasonChoices = {'I': "Investigative", "V": "Motor Vehicle", "E": "Equipment"}
+        reason_choices = {'I': "Investigative", "V": "Motor Vehicle", "E": "Equipment"}
         column_list = ['Investigative', 'Motor Vehicle', 'Equipment']
-        q_list = qb(**kwargs)
-        if q_list:
-            total_count = self.filter(reduce(operator.and_,q_list)).exclude(stop_reason_code='').count()
-            if total_count == 0:
-                return [{'Results': 'No Results Found'}]
-            total_countby_race = self.filter(reduce(operator.and_,q_list)).exclude(stop_reason_code='').\
-                exclude(subject_ethnicity_code='H').values('subject_race_code').annotate(count=Count('subject_race_code'))
-            total_countby_ethnicity = self.filter(reduce(operator.and_,q_list)).exclude(stop_reason_code='').\
-                values('subject_ethnicity_code').annotate(count=Count('subject_ethnicity_code'))
-            totals = self.filter(reduce(operator.and_,q_list)).exclude(stop_reason_code='').\
-                values('stop_reason_code').\
-                annotate(count=Count('stop_reason_code'))
-            rqs = self.filter(reduce(operator.and_,q_list)).exclude(stop_reason_code='')\
-                .values('stop_reason_code', 'subject_race_code')\
-                .annotate(count=Count('stop_reason_code'))
-            eqs = self.filter(reduce(operator.and_,q_list)).exclude(stop_reason_code='')\
-                .exclude(subject_ethnicity_code='N')\
-                .values('stop_reason_code', 'subject_ethnicity_code')\
-                .annotate(count=Count('stop_reason_code'))
-        else:
-            total_count = self.exclude(stop_reason_code='').count()
-            total_countby_race = self.exclude(stop_reason_code='').exclude(subject_ethnicity_code='H').\
-                values('subject_race_code').annotate(count=Count('subject_race_code'))
-            total_countby_ethnicity = self.exclude(stop_reason_code='').\
-                values('subject_ethnicity_code').annotate(count=Count('subject_ethnicity_code'))
-            totals = self.exclude(stop_reason_code='').\
-                values('stop_reason_code').\
-                annotate(count=Count('stop_reason_code'))
-            rqs = self.exclude(stop_reason_code='').exclude(subject_ethnicity_code='H').\
-                values('stop_reason_code', 'subject_race_code').\
-                annotate(count=Count('stop_reason_code'))
-            eqs = self.exclude(stop_reason_code='')\
-                .exclude(subject_ethnicity_code='N')\
-                .values('stop_reason_code', 'subject_ethnicity_code')\
-                .annotate(count=Count('stop_reason_code'))
+        query_parameters = qb(**kwargs)
 
+        final_data_container = build_final_data_container(column_list)
+
+        try:
+            filtered_partial = self.filter(reduce(operator.and_, query_parameters))
+        except TypeError:
+            filtered_partial = self
+
+        total_count = filtered_partial.exclude(stop_reason_code='').count()
+        if total_count == 0:
+            return [v for k, v in final_data_container.items()]
+
+        totals = filtered_partial.exclude(stop_reason_code='').\
+            values('stop_reason_code').\
+            annotate(count=Count('stop_reason_code'))
+        rqs = filtered_partial.exclude(stop_reason_code='')\
+            .values('stop_reason_code', 'subject_race_code')\
+            .annotate(count=Count('stop_reason_code'))
+        eqs = filtered_partial.exclude(stop_reason_code='')\
+            .exclude(subject_ethnicity_code='N')\
+            .values('stop_reason_code', 'subject_ethnicity_code')\
+            .annotate(count=Count('stop_reason_code'))
 
         totals_lookup = {x['stop_reason_code']: x['count'] for x in totals}
-        tl = [{'count': x['count'], 'column': reasonChoices[x['stop_reason_code']], \
+
+        totals_by_stop_reason = [{'count': x['count'], 'column': reason_choices[x['stop_reason_code']], \
                'race/ethnicity': 'Total', 'percent': 100.0}
               for x in totals]
 
-        missing_total = new_find_missing('column', 'race/ethnicity', column_list, ['Total'], tl)
-        for e in missing_total:
-            tl.append({'count': -999, 'column': e[0], 'race/ethnicity': e[1], 'percent': -999})
-
-        rl = [{'count': x['count'], 'column': reasonChoices[x['stop_reason_code']],
+        race_by_stop_reason = [{'count': x['count'], 'column': reason_choices[x['stop_reason_code']],
                'race/ethnicity': race_choices[x['subject_race_code']],
                'percent': round(100.0 * (1.0 * x['count']) / totals_lookup[x['stop_reason_code']], 1)}
               for x in rqs]
-            # 'percent': round(100.0*(1.0*x['count'])/ tcr[x['subject_race_code']],1)}
 
-        missing_race = new_find_missing('column', 'race/ethnicity', column_list, race_list, rl)
-        for e in missing_race:
-            rl.append({'count': -999, 'column': e[0], 'race/ethnicity': e[1], 'percent': -999})
-
-        el = [{'count': x['count'], 'column': reasonChoices[x['stop_reason_code']],
+        ethnicity_by_stop_reason = [{'count': x['count'], 'column': reason_choices[x['stop_reason_code']],
                'race/ethnicity': ethnicity_choices[x['subject_ethnicity_code']],
                'percent': round(100.0 * (1.0 * x['count']) / totals_lookup[x['stop_reason_code']], 1)}
               for x in eqs]
-               # 'percent': round(100.0*(1.0*x['count'])/ tce[x['subject_ethnicity_code']],1)}
 
-        missing_ethnicity = new_find_missing('column', 'race/ethnicity', column_list, ethnicity_list, el)
-        for e in missing_ethnicity:
-            el.append({'count': -999, 'column': e[0], 'race/ethnicity': e[1], 'percent': -999})
-
-        final_data = OrderedDict()
-        for r in datastructure_list:
-            row = { 'race/ethnicity': r }
-            for c in column_list:
-                row[c] = { 'count': -999, 'percent': -999 }
-            final_data[r] = row
-        for row in tl+rl+el:
+        for row in totals_by_stop_reason+race_by_stop_reason+ethnicity_by_stop_reason:
             race = row['race/ethnicity']
             stop_reason = row['column']
             try:
-                final_data[race][stop_reason]['count'] = row['count']
-                final_data[race][stop_reason]['percent'] = row['percent']
+                final_data_container[race][stop_reason]['count'] = row['count']
+                final_data_container[race][stop_reason]['percent'] = row['percent']
             except KeyError:
                 pass
 
-        return [v for k,v in final_data.items()]
+        return [v for k,v in final_data_container.items()]
 
     def disposition_of_stops(self, **kwargs):
-        dispositionCodeKey = {'V': 'Verbal Warning', 'W':'Written Warning', 'I':'Infraction', 'U':'UAR', 'N': 'No Disposition', 'M': 'Mis. Summons'}
-        exclude_list = ['', None]
-        q_list = qb(**kwargs)
-        filters = reduce(operator.and_,q_list)
-        if q_list:
-            total_count = self.filter(filters).exclude(intervention_disposition_code='').exclude(intervention_disposition_code=None).count()
-            if total_count == 0:
-                return [{'Results': 'No Results Found'}]
-            total_countby_race = self.exclude(subject_ethnicity_code='H').filter(filters).exclude(intervention_disposition_code='').exclude(intervention_disposition_code=None).\
-                values('subject_race_code').annotate(count=Count('subject_race_code'))
-            total_countby_ethnicity = self.filter(filters).exclude(intervention_disposition_code='').exclude(intervention_disposition_code=None).\
-                values('subject_ethnicity_code').annotate(count=Count('subject_ethnicity_code'))
-            totals = self.filter(filters).exclude(intervention_disposition_code='').exclude(intervention_disposition_code=None).\
-                values('intervention_disposition_code').\
-                annotate(count=Count('intervention_disposition_code'))
-            rqs = self.exclude(subject_ethnicity_code='H').filter(filters).exclude(intervention_disposition_code='').exclude(intervention_disposition_code=None).\
-                values('intervention_disposition_code', 'subject_race_code').\
-                annotate(count=Count('intervention_disposition_code'))
-            eqs = self.filter(filters).exclude(intervention_disposition_code='').exclude(intervention_disposition_code=None).\
-                values('intervention_disposition_code', 'subject_ethnicity_code').\
-                annotate(count=Count('intervention_disposition_code'))
-        else:
-            total_count = self.exclude(intervention_disposition_code='').exclude(intervention_disposition_code=None).count()
-            total_countby_race = self.exclude(subject_ethnicity_code='H').exclude(intervention_disposition_code='').exclude(intervention_disposition_code=None).\
-                values('subject_race_code').annotate(count=Count('subject_race_code'))
-            total_countby_ethnicity = self.exclude(intervention_disposition_code='').exclude(intervention_disposition_code=None).\
-                values('subject_ethnicity_code').annotate(count=Count('subject_ethnicity_code'))
-            totals = self.exclude(intervention_disposition_code='').exclude(intervention_disposition_code=None).\
-                values('intervention_disposition_code').\
-                annotate(count=Count('intervention_disposition_code'))
-            rqs = self.exclude(subject_ethnicity_code='H').exclude(intervention_disposition_code='').exclude(intervention_disposition_code=None).\
-                values('intervention_disposition_code', 'subject_race_code').\
-                annotate(count=Count('intervention_disposition_code'))
-            eqs = self.exclude(intervention_disposition_code='').exclude(intervention_disposition_code=None).\
-                values('intervention_disposition_code', 'subject_ethnicity_code').\
-                annotate(count=Count('intervention_disposition_code'))
-        totals = [x for x in totals if x['intervention_disposition_code'] is not None]
-        tcr = dict((x['subject_race_code'], x['count']) for x in total_countby_race)
-        tce = dict((x['subject_ethnicity_code'], x['count']) for x in total_countby_ethnicity)
-        tl = [{'count': x['count'], 'column': dispositionCodeKey[x['intervention_disposition_code']],\
-                'race/ethnicity': 'Total', 'percent': round(100.0*(1.0*x['count'])/ total_count,1)}
-            for x in totals]
-        rl = [{'count': x['count'], 'column': dispositionCodeKey[x['intervention_disposition_code']],\
-                'race/ethnicity': race_choices[x['subject_race_code']], 'percent': round(100.0*(1.0*x['count'])/ tcr[x['subject_race_code']],1)}
-            for x in rqs]
-        el = [{'count': x['count'], 'column': dispositionCodeKey[x['intervention_disposition_code']],\
-                'race/ethnicity': ethnicity_choices[x['subject_ethnicity_code']], 'percent': round(100.0*(1.0*x['count'])/ tce[x['subject_ethnicity_code']],1)}
-            for x in eqs]
-        column_list = ['Verbal Warning', 'Written Warning', 'Infraction', 'UAR', 'No Disposition', 'Mis. Summons']
-        missing_total = new_find_missing('column', 'race/ethnicity', column_list, ['Total'], tl)
-        missing_race = new_find_missing('column', 'race/ethnicity', column_list, race_list, rl)
-        missing_ethnicity = new_find_missing('column', 'race/ethnicity', column_list, ethnicity_list, el)
-        for e in missing_total:
-            tl.append({'count': -999, 'column': e[0], 'race/ethnicity': e[1], 'percent': -999})
-        for e in missing_race:
-            rl.append({'count': -999, 'column': e[0], 'race/ethnicity': e[1], 'percent': -999})
-        for e in missing_ethnicity:
-            el.append({'count': -999, 'column': e[0], 'race/ethnicity': e[1], 'percent': -999})
-        l = tl + rl + el
-        return l
+
+        disposition_code_key = {'V': 'Verbal Warning', 'W':'Written Warning', 'I':'Infraction', 'U':'UAR', 'N': 'No Disposition', 'M': 'Mis. Summons'}
+        column_list = ['Verbal Warning', 'Written Warning', 'Infraction', 'UAR', 'Mis. Summons', 'No Disposition']
+
+        query_parameters = qb(**kwargs)
+
+        final_data_container = build_final_data_container(column_list)
+
+        try:
+            filtered_partial = self.filter(reduce(operator.and_, query_parameters)).\
+                exclude(intervention_disposition_code='').\
+                exclude(intervention_disposition_code=None)
+        except TypeError:
+            filtered_partial = self
+
+        total_count = filtered_partial.count()
+        if total_count == 0:
+            return [v for k, v in final_data_container.items()]
+
+        totals_by_race = filtered_partial.\
+            values('subject_race_code').annotate(count=Count('subject_race_code'))
+        totals_by_ethnicity = filtered_partial.\
+            values('subject_ethnicity_code').annotate(count=Count('subject_ethnicity_code'))
+        totals_qs = filtered_partial.\
+            values('intervention_disposition_code').\
+            annotate(count=Count('intervention_disposition_code'))
+        race_qs = filtered_partial.exclude(subject_ethnicity_code='H').\
+            values('intervention_disposition_code', 'subject_race_code').\
+            annotate(count=Count('intervention_disposition_code'))
+        ethnicity_qs = filtered_partial.\
+            values('intervention_disposition_code', 'subject_ethnicity_code').\
+            annotate(count=Count('intervention_disposition_code'))
+
+        totals_lookup = build_total_lookup(total_count, totals_by_race, totals_by_ethnicity)
+
+        final_data_container =  structure_results(totals_qs, race_qs, ethnicity_qs, final_data_container, totals_lookup,
+                                                  lambda x: disposition_code_key[x['intervention_disposition_code']])
+
+        return [v for k, v in final_data_container.items()]
 
     def statuatory_authority(self,**kwargs):
-        q_list = qb(**kwargs)
-        if q_list:
-            total_count = self.filter(reduce(operator.and_,q_list)).exclude(statutory_reason_for_stop='').count()
-            if total_count == 0:
-                return [{'Results': 'No Results Found'}]
-            total_countby_race = self.exclude(subject_ethnicity_code='H').filter(reduce(operator.and_,q_list)).exclude(statutory_reason_for_stop='').\
-                values('subject_race_code').annotate(count=Count('subject_race_code'))
-            total_countby_ethnicity = self.filter(reduce(operator.and_,q_list)).exclude(statutory_reason_for_stop='').\
-                values('subject_ethnicity_code').annotate(count=Count('subject_ethnicity_code'))
-            totals = self.filter(reduce(operator.and_,q_list)).exclude(statutory_reason_for_stop='').\
-                values('statutory_reason_for_stop').\
-                annotate(count=Count('statutory_reason_for_stop'))
-            rqs = self.exclude(subject_ethnicity_code='H').filter(reduce(operator.and_,q_list)).exclude(statutory_reason_for_stop='').\
-                values('statutory_reason_for_stop', 'subject_race_code').\
-                annotate(count=Count('statutory_reason_for_stop'))
-            eqs = self.filter(reduce(operator.and_,q_list)).exclude(statutory_reason_for_stop='').\
-                values('statutory_reason_for_stop', 'subject_ethnicity_code').\
-                annotate(count=Count('statutory_reason_for_stop'))
-        else:
-            total_count = self.exclude(statutory_reason_for_stop='').count()
-            total_countby_race = self.exclude(subject_ethnicity_code='H').exclude(statutory_reason_for_stop='').\
-                values('subject_race_code').annotate(count=Count('subject_race_code'))
-            total_countby_ethnicity = self.exclude(statutory_reason_for_stop='').\
-                values('subject_ethnicity_code').annotate(count=Count('subject_ethnicity_code'))
-            totals = self.exclude(statutory_reason_for_stop='').\
-                values('statutory_reason_for_stop').\
-                annotate(count=Count('statutory_reason_for_stop'))
-            rqs = self.exclude(subject_ethnicity_code='H').exclude(statutory_reason_for_stop='').\
-                values('statutory_reason_for_stop', 'subject_race_code').\
-                annotate(count=Count('statutory_reason_for_stop'))
-            eqs = self.exclude(statutory_reason_for_stop='').\
-                values('statutory_reason_for_stop', 'subject_ethnicity_code').\
-                annotate(count=Count('statutory_reason_for_stop'))
-        column_list = ['Registration', 'Seatbelt', 'Equipment Violation','Cell Phone','Suspended License', 'Speed Related', 'Other', 'Moving Violation', 'Defective Lights', 'Display of Plates', 'Traffic Control Signal', 'Stop Sign', 'Window Tint']
-        tcr = dict((x['subject_race_code'], x['count']) for x in total_countby_race)
-        tce = dict((x['subject_ethnicity_code'], x['count']) for x in total_countby_ethnicity)
-        tl = [{'count': x['count'], 'column': x['statutory_reason_for_stop'],\
-                'race/ethnicity': 'Total', 'percent': round(100.0*(1.0*x['count'])/ total_count,1)}
-            for x in totals]
-        missing_total = new_find_missing('column', 'race/ethnicity', column_list, ['Total'], tl)
-        for e in missing_total:
-            tl.append({'count': -999, 'column': e[0], 'race/ethnicity': e[1], 'percent': -999})
-        rl = [{'count': x['count'], 'column': x['statutory_reason_for_stop'], 'race/ethnicity': race_choices[x['subject_race_code']], 'percent': round(100.0*(1.0*x['count'])/ tcr[x['subject_race_code']],1)}
-            for x in rqs]
-        el = [{'count': x['count'], 'column': x['statutory_reason_for_stop'], 'race/ethnicity': ethnicity_choices[x['subject_ethnicity_code']], 'percent': round(100.0*(1.0*x['count'])/ tce[x['subject_ethnicity_code']],1)}
-            for x in eqs]
-        missing_race = new_find_missing('column', 'race/ethnicity', column_list, race_list, rl)
-        missing_ethnicity = new_find_missing('column', 'race/ethnicity', column_list, ethnicity_list, el)
-        for e in missing_race:
-            rl.append({'count': -999, 'column': e[0], 'race/ethnicity': e[1], 'percent': -999})
-        for e in missing_ethnicity:
-            el.append({'count': -999, 'column': e[0], 'race/ethnicity': e[1], 'percent': -999})
-        l = tl + rl + el
-        return l
+
+        column_list = ['Registration', 'Seatbelt', 'Equipment Violation', 'Cell Phone', 'Suspended License',
+                       'Speed Related', 'Other', 'Moving Violation', 'Defective Lights', 'Display of Plates',
+                       'Traffic Control Signal', 'Stop Sign', 'Window Tint']
+        query_parameters = qb(**kwargs)
+
+        final_data_container = build_final_data_container(column_list)
+
+        try:
+            filtered_partial = self.filter(reduce(operator.and_, query_parameters)).\
+                exclude(statutory_reason_for_stop='')
+        except TypeError:
+            filtered_partial = self
+
+        total_count = filtered_partial.count()
+        if total_count == 0:
+            return [v for k,v in final_data_container.items()]
+
+        totals_by_race = filtered_partial.exclude(subject_ethnicity_code='H').\
+            values('subject_race_code').\
+            annotate(count=Count('subject_race_code'))
+
+        totals_by_ethnicity = filtered_partial.\
+            values('subject_ethnicity_code').\
+            annotate(count=Count('subject_ethnicity_code'))
+
+        totals_qs = filtered_partial.\
+            values('statutory_reason_for_stop').\
+            annotate(count=Count('statutory_reason_for_stop'))
+
+        race_qs = filtered_partial.exclude(subject_ethnicity_code='H').\
+            values('statutory_reason_for_stop', 'subject_race_code').\
+            annotate(count=Count('statutory_reason_for_stop'))
+
+        ethnicity_qs = filtered_partial.\
+            values('statutory_reason_for_stop', 'subject_ethnicity_code').\
+            annotate(count=Count('statutory_reason_for_stop'))
+
+        totals_lookup = build_total_lookup(total_count, totals_by_race, totals_by_ethnicity)
+
+        final_data_container = structure_results(totals_qs, race_qs, ethnicity_qs, final_data_container,
+                                                 totals_lookup, lambda x: x['statutory_reason_for_stop'])
+
+
+        return [v for k,v in final_data_container.items()]
 
     def stops_by_month(self,**kwargs):
-        q_list = qb(**kwargs)
+        query_parameters = qb(**kwargs)
         truncate_date = connection.ops.date_trunc_sql('month', '"intervention_datetime"')
-        if q_list:
-            count = self.filter(reduce(operator.and_,q_list)).count()
-            if count == 0:
-                return [{'Results': 'No Results Found'}]
-            qs = self.filter(reduce(operator.and_,q_list)).extra({'month':truncate_date}).\
-                values('month').annotate(Count('pk')).order_by('month')
-        else:
-            qs = self.extra({'month':truncate_date}).values('month').\
-                annotate(Count('pk')).order_by('month')
-        # l = [{'count': x['pk__count'], 'month': str(x['month'])} for x in qs]
-        l = [{'count': x['pk__count'], 'month': format_month(x['month'])} for x in qs]
-        return l
 
+        try:
+            filtered_partial = self.filter(reduce(operator.and_, query_parameters))
+        except TypeError:
+            filtered_partial = self
+
+        count = filtered_partial.count()
+        if count == 0:
+            return [{'Results': 'No Results Found'}]
+
+        results_queryset = filtered_partial.\
+            extra({'month':truncate_date}).\
+            values('month').annotate(Count('pk')).\
+            order_by('month')
+
+        final_results = [{'count': x['pk__count'], 'month': format_month(x['month'])} for x in results_queryset]
+        return final_results
 
     def stops_by_hour(self, **kwargs):
-        q_list = qb(**kwargs)
+        query_parameters = qb(**kwargs)
 
-        if q_list:
-            count = self.filter(reduce(operator.and_,q_list)).count()
-            if count == 0:
-                return [{'Results': 'No Results Found'}]
-            qs = self.filter(reduce(operator.and_,q_list)).extra({'hour': 'EXTRACT(hour from "intervention_datetime")'}).\
-                values('hour').annotate(Count('pk')).order_by('hour')
+        try:
+            filtered_partial = self.filter(reduce(operator.and_, query_parameters))
+        except TypeError:
+            filtered_partial = self
 
-        else:
-            qs = self.extra({'hour': 'EXTRACT(hour from "intervention_datetime")'}).values('hour').\
-                annotate(Count('pk')).order_by('hour')
-        l = [{'count': x['pk__count'], 'hour': format_hour(x['hour'])} for x in qs]
-        return l
+        count = filtered_partial.count()
 
+        if count == 0:
+            return [{'Results': 'No Results Found'}]
+
+        results_queryset = filtered_partial.\
+            extra({'hour': 'EXTRACT(hour from "intervention_datetime")'}). \
+            values('hour').annotate(Count('pk')).order_by('hour')
+
+        final_results = [{'count': x['pk__count'], 'hour': format_hour(x['hour'])} for x in results_queryset]
+        return final_results
 
     def stops_by_age(self, **kwargs):
-        age_buckets = {1: "16 to 25", 2: "25 to 40", 3: "40 to 60", 4: "60+", 5: "None"}
-        race_choices = {'A': "Asian Non-Hispanic", "B": "Black Non-Hispanic", "I": "Indian American / Alaskan Native Non-Hispanic", 'W': "White Non-Hispanic"}
-        ethnicity_choices = {'H': "Hispanic", "M": "Middle Eastern", "N": "Not Applicable"}
-        q_list = qb(**kwargs)
-        if q_list:
-            total_count = self.filter(reduce(operator.and_,q_list)).count()
-            if total_count == 0:
-                return [{'Results': 'No Results Found'}]
-            total_countby_race = self.filter(reduce(operator.and_,q_list)).exclude(subject_ethnicity_code='H').\
-                values('subject_race_code').annotate(count=Count('subject_race_code'))
-            total_countby_ethnicity = self.filter(reduce(operator.and_,q_list)).\
-                values('subject_ethnicity_code').annotate(count=Count('subject_ethnicity_code'))
-            tqs = self.filter(reduce(operator.and_,q_list)).extra(select={
-                    'age_bucket': '(case when "subject_age" >= 16 and "subject_age" < 25 then 1 \
-                        when "subject_age" >= 25 and "subject_age" < 40 then 2 \
-                        when "subject_age" >= 40 and "subject_age" < 60 then 3 \
-                        when "subject_age" > 60 then 4 \
-                        else 5 \
-                        end)'}).values('age_bucket').annotate(Count('pk'))
-            rqs = self.filter(reduce(operator.and_,q_list)).exclude(subject_ethnicity_code='H').extra(select={
-                    'age_bucket': '(case when "subject_age" >= 16 and "subject_age" < 25 then 1 \
-                        when "subject_age" >= 25 and "subject_age" < 40 then 2 \
-                        when "subject_age" >= 40 and "subject_age" < 60 then 3 \
-                        when "subject_age" > 60 then 4 \
-                        else 5 \
-                        end)'}).values('age_bucket','subject_race_code').annotate(Count('pk'))
-            eqs = self.filter(reduce(operator.and_,q_list)).extra(select={
-                    'age_bucket': '(case when "subject_age" >= 16 and "subject_age" < 25 then 1 \
-                        when "subject_age" >= 25 and "subject_age" < 40 then 2 \
-                        when "subject_age" >= 40 and "subject_age" < 60 then 3 \
-                        when "subject_age" > 60 then 4 \
-                        else 5 \
-                        end)'}).values('age_bucket','subject_ethnicity_code').annotate(Count('pk'))
-        else:
-            total_count = self.count()
-            total_countby_race = self.values('subject_race_code').exclude(subject_ethnicity_code='H').annotate(count=Count('subject_race_code'))
-            total_countby_ethnicity = self.values('subject_ethnicity_code').annotate(count=Count('subject_ethnicity_code'))
-            tqs = self.extra(select={
-                    'age_bucket': '(case when "subject_age" >= 16 and "subject_age" < 25 then 1 \
-                        when "subject_age" >= 25 and "subject_age" < 40 then 2 \
-                        when "subject_age" >= 40 and "subject_age" < 60 then 3 \
-                        when "subject_age" > 60 then 4 \
-                        else 5 \
-                        end)'}).values('age_bucket')\
-                    .annotate(Count('pk'))
-            rqs = self.exclude(subject_ethnicity_code='H').extra(select={
-                    'age_bucket': '(case when "subject_age" >= 16 and "subject_age" < 25 then 1 \
-                        when "subject_age" >= 25 and "subject_age" < 40 then 2 \
-                        when "subject_age" >= 40 and "subject_age" < 60 then 3 \
-                        when "subject_age" > 60 then 4 \
-                        else 5 \
-                        end)'}).values('age_bucket', 'subject_race_code')\
-                    .annotate(Count('pk'))
-            eqs = self.extra(select={
-                    'age_bucket': '(case when "subject_age" >= 16 and "subject_age" < 25 then 1 \
-                        when "subject_age" >= 25 and "subject_age" < 40 then 2 \
-                        when "subject_age" >= 40 and "subject_age" < 60 then 3 \
-                        when "subject_age" > 60 then 4 \
-                        else 5 \
-                        end)'}).values('age_bucket', 'subject_ethnicity_code')\
-                    .annotate(Count('pk'))
-        # First we filter out age values that are "bad"
-        # Then we restructure the list, calculate percents, and remap ages to strings
-        tcr = dict((x['subject_race_code'], x['count']) for x in total_countby_race)
-        tce = dict((x['subject_ethnicity_code'], x['count']) for x in total_countby_ethnicity)
 
+        age_buckets = {1: "16 to 25", 2: "25 to 40", 3: "40 to 60", 4: "60+", 5: "None"}
         column_list = ["16 to 25", "25 to 40", "40 to 60", "60+"]
 
-        tl = [item for item in tqs if(item['age_bucket'] < 5)]
-        tl = [{'count': x['pk__count'], 'age': age_buckets[x['age_bucket']],\
-         'race/ethnicity': 'Total', \
-         'percent': round(100.0*(1.0*x['pk__count'])/ total_count,1)}
-            for x in tl]
+        query_parameters = qb(**kwargs)
 
-        rl = [item for item in rqs if(item['age_bucket'] < 5)]
-        rl = [{'count': x['pk__count'], 'age': age_buckets[x['age_bucket']],\
-         'race/ethnicity': race_choices[x['subject_race_code']], \
-         'percent': round(100.0*(1.0*x['pk__count'])/ tcr[x['subject_race_code']],1)}
-            for x in rl]
-        missing_race = new_find_missing('age', 'race/ethnicity', column_list, race_list, rl)
-        for e in missing_race:
-            rl.append({'count': -999, 'age': e[0], 'race/ethnicity': e[1], 'percent': -999})
-        el = [item for item in eqs if(item['age_bucket'] < 5)]
-        el = [{'count': x['pk__count'], 'age': age_buckets[x['age_bucket']],\
-         'race/ethnicity': ethnicity_choices[x['subject_ethnicity_code']],\
-          'percent': round(100.0*(1.0*x['pk__count'])/ tce[x['subject_ethnicity_code']],1)}
-            for x in el]
-        missing_ethnicity = new_find_missing('age', 'race/ethnicity', column_list, ethnicity_list, el)
-        for e in missing_ethnicity:
-            el.append({'count': -999, 'age': e[0], 'race/ethnicity': e[1], 'percent': -999})
-        l = {'total': tl, 'race': rl, 'ethnicity': el}
-        return l
+        try:
+            filtered_partial = self.filter(reduce(operator.and_, query_parameters))
+        except TypeError:
+            filtered_partial = self
+
+        final_data_container = build_final_data_container(column_list)
+
+        total_count = filtered_partial.count()
+        if total_count == 0:
+            return [v for k, v in final_data_container.items()]
+
+        totals_by_race = filtered_partial.\
+            exclude(subject_ethnicity_code='H').\
+            values('subject_race_code').\
+            annotate(count=Count('subject_race_code'))
+
+        totals_by_ethnicity = filtered_partial.\
+            values('subject_ethnicity_code').\
+            annotate(count=Count('subject_ethnicity_code'))
+
+        totals_qs = filtered_partial.\
+            extra(select={
+                'age_bucket': '(case when "subject_age" >= 16 and "subject_age" < 25 then 1 \
+                    when "subject_age" >= 25 and "subject_age" < 40 then 2 \
+                    when "subject_age" >= 40 and "subject_age" < 60 then 3 \
+                    when "subject_age" > 60 then 4 \
+                    else 5 \
+                    end)'}).\
+            values('age_bucket').\
+            annotate(Count('pk'))
+
+        race_qs = filtered_partial.\
+            exclude(subject_ethnicity_code='H').\
+            extra(select={
+                'age_bucket': '(case when "subject_age" >= 16 and "subject_age" < 25 then 1 \
+                    when "subject_age" >= 25 and "subject_age" < 40 then 2 \
+                    when "subject_age" >= 40 and "subject_age" < 60 then 3 \
+                    when "subject_age" > 60 then 4 \
+                    else 5 \
+                    end)'}).\
+            values('age_bucket','subject_race_code').\
+            annotate(Count('pk'))
+
+        ethnicity_qs = filtered_partial.\
+            extra(select={
+                'age_bucket': '(case when "subject_age" >= 16 and "subject_age" < 25 then 1 \
+                    when "subject_age" >= 25 and "subject_age" < 40 then 2 \
+                    when "subject_age" >= 40 and "subject_age" < 60 then 3 \
+                    when "subject_age" > 60 then 4 \
+                    else 5 \
+                    end)'}).\
+            values('age_bucket','subject_ethnicity_code').\
+            annotate(Count('pk'))
+
+        totals_lookup = build_total_lookup(total_count, totals_by_race, totals_by_ethnicity)
+
+        final_data_container = structure_results(totals_qs,
+                                                 race_qs,
+                                                 ethnicity_qs,
+                                                 final_data_container,
+                                                 totals_lookup,
+                                                 lambda x: age_buckets[x['age_bucket']],
+                                                 exclude=exclude_age_function,
+                                                 count_key='pk__count')
+
+        return [v for k, v in final_data_container.items()]
+
+    def search_information(self, **kwargs):
+        column_list = ['Cars Searched', 'Consent', 'Inventory', 'Other', 'Contraband Found']
+
+        final_data_container = build_final_data_container(column_list)
+
+        query_parameters = qb(**kwargs)
+
+        try:
+            filtered_partial = self.filter(reduce(operator.and_, query_parameters))
+        except TypeError:
+            filtered_partial = self
+
+        total_count = filtered_partial.exclude(searched__isnull=True).count()
+        if total_count == 0:
+            return [v for k, v in final_data_container.items()]
+
+        totals_by_race = filtered_partial.\
+            exclude(subject_ethnicity_code='H').\
+            exclude(searched__isnull=True).\
+            values('subject_race_code').\
+            annotate(count=Count('subject_race_code'))
+
+        totals_by_ethnicity = filtered_partial.\
+            exclude(searched__isnull=True).\
+            values('subject_ethnicity_code').\
+            annotate(count=Count('subject_ethnicity_code'))
+
+        totals_lookup = build_total_lookup(total_count, totals_by_race, totals_by_ethnicity)
+
+        total_searched = filtered_partial.filter(searched=True).count()
+
+        cars_searched_race_qs = filtered_partial.\
+            exclude(subject_ethnicity_code='H').\
+            filter(searched=True).\
+            values('subject_race_code').\
+            annotate(Count('subject_race_code')).\
+            annotate(row_type=Value('Cars Searched', output_field=CharField()))
+
+        cars_searched_ethnicity_qs = filtered_partial.\
+            filter(searched=True).\
+            values('subject_ethnicity_code').\
+            annotate(Count('subject_ethnicity_code')). \
+            annotate(row_type=Value('Cars Searched', output_field=CharField()))
+
+        consent_total = filtered_partial.\
+            filter(searched=True).\
+            filter(search_authorization_code__exact='C').\
+            count()
+
+        inventory_total = filtered_partial.\
+            filter(searched=True).\
+            filter(search_authorization_code__exact='I').\
+            count()
+
+        other_total = filtered_partial.\
+            filter(searched=True).\
+            filter(search_authorization_code__exact='O').\
+            count()
+
+        contraband_found_total = filtered_partial.\
+            filter(contraband_found=True).\
+            count()
+
+        # Todo: Handles 0
+        final_data_container['Total']['Cars Searched']['count'] = total_searched
+        final_data_container['Total']['Cars Searched']['percent'] = 100
+        final_data_container['Total']['Consent']['count'] = consent_total
+        final_data_container['Total']['Consent']['percent'] = 100
+        final_data_container['Total']['Inventory']['count'] = inventory_total
+        final_data_container['Total']['Inventory']['percent'] = 100
+        final_data_container['Total']['Other']['count'] = other_total
+        final_data_container['Total']['Other']['percent'] = 100
+        final_data_container['Total']['Contraband Found']['count'] = contraband_found_total
+        final_data_container['Total']['Contraband Found']['percent'] = 100
+
+        consent_race = filtered_partial.\
+            filter(searched=True).\
+            filter(search_authorization_code__exact='C').\
+            values('subject_race_code').\
+            annotate(Count('subject_race_code')). \
+            annotate(row_type=Value('Consent', output_field=CharField()))
+
+        consent_ethnicity = filtered_partial. \
+            filter(searched=True). \
+            filter(search_authorization_code__exact='C'). \
+            values('subject_ethnicity_code'). \
+            annotate(Count('subject_ethnicity_code')). \
+            annotate(row_type=Value('Consent', output_field=CharField()))
+
+        inventory_race = filtered_partial.\
+            filter(searched=True).\
+            filter(search_authorization_code__exact='I').\
+            values('subject_race_code').\
+            annotate(Count('subject_race_code')). \
+            annotate(row_type=Value('Inventory', output_field=CharField()))
+
+        inventory_ethnicity = filtered_partial. \
+            filter(searched=True). \
+            filter(search_authorization_code__exact='I'). \
+            values('subject_ethnicity_code'). \
+            annotate(Count('subject_ethnicity_code')). \
+            annotate(row_type=Value('Inventory', output_field=CharField()))
+
+        other_race = filtered_partial.\
+            filter(searched=True).\
+            filter(search_authorization_code__exact='O').\
+            values('subject_race_code').\
+            annotate(Count('subject_race_code')). \
+            annotate(row_type=Value('Other', output_field=CharField()))
+
+        other_ethnicity = filtered_partial.\
+            filter(searched=True). \
+            filter(search_authorization_code__exact='O').\
+            values('subject_ethnicity_code').\
+            annotate(Count('subject_ethnicity_code')). \
+            annotate(row_type=Value('Other', output_field=CharField()))
+
+        contraband_found_race = filtered_partial.\
+            filter(contraband_found=True).\
+            values('subject_race_code').\
+            annotate(Count('subject_race_code')). \
+            annotate(row_type=Value('Contraband Found', output_field=CharField()))
+
+        contraband_found_ethnicity= filtered_partial.\
+            filter(contraband_found=True).\
+            values('subject_ethnicity_code').\
+            annotate(Count('subject_ethnicity_code')). \
+            annotate(row_type=Value('Contraband Found', output_field=CharField()))
+
+        results = list(chain(
+            cars_searched_race_qs,
+            cars_searched_ethnicity_qs,
+            consent_race,
+            consent_ethnicity,
+            inventory_race,
+            inventory_ethnicity,
+            other_race,
+            other_ethnicity,
+            contraband_found_race,
+            contraband_found_ethnicity
+        ))
+
+        for row in results:
+            row_type = row['row_type']
+
+            if 'subject_race_code' in row:
+                race_ethnicity = race_choices[row['subject_race_code']]
+                count = row['subject_race_code__count']
+            elif 'subject_ethnicity_code' in row:
+                race_ethnicity = ethnicity_choices[row['subject_ethnicity_code']]
+                count = row['subject_ethnicity_code__count']
+
+            total = totals_lookup[race_ethnicity]
+            percent = round(count / total * 100, 1)
+            try:
+                final_data_container[race_ethnicity][row_type]['count'] = count
+                final_data_container[race_ethnicity][row_type]['percent'] = percent
+            except KeyError:
+                pass
+
+        return [v for k,v in final_data_container.items()]

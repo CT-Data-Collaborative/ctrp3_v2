@@ -1,5 +1,14 @@
 import React from 'react';
-import { buildNatureOfStopTable, buildStopTable, buildStopsByMonthTable, buildStopsByHourTable, buildStopEnforcementMethodTable } from './helpers.jsx';
+import { buildNatureOfStopTable,
+  buildStopTable,
+  buildStopsByMonthTable,
+  buildStopsByHourTable,
+  buildStopEnforcementMethodTable,
+  buildAgeOfDriverTable,
+  buildDispositionTable,
+  buildResidencyTable,
+  buildSearchInformationTable
+} from './helpers.jsx';
 
 class Results extends React.Component {
   constructor(props) {
@@ -52,6 +61,38 @@ class Results extends React.Component {
     }
   }
 
+  ageOfDriverTable(data) {
+    if (this.state.display['Age of the Driver'] == true) {
+      return buildAgeOfDriverTable(data['Age of the Driver'])
+    } else {
+      return <div></div>
+    }
+  }
+
+  dispositionTable(data) {
+    if (this.state.display['Disposition of the Traffic Stop'] == true) {
+      return buildDispositionTable(data['Disposition of the Traffic Stop'])
+    } else {
+      return <div></div>
+    }
+  }
+
+  residencyTable(data) {
+    if (this.state.display['Residency Information'] == true) {
+      return buildResidencyTable(data['Residency Information'])
+    } else {
+      return <div></div>
+    }
+  }
+
+  searchInformationTable(data) {
+    if (this.state.display['Search Information'] == true) {
+      return buildSearchInformationTable(data['Search Information'])
+    } else {
+      return <div></div>
+    }
+
+  }
   componentWillReceiveProps(nextProps) {
     let display = {};
 
@@ -67,11 +108,6 @@ class Results extends React.Component {
     this.setState({ display })
   }
 
-  displayList() {
-    const display = this.state.display;
-    return <ul>{Object.keys(display).map((l) => <li key={l}>{l}: {display[l] ? 'True' : 'False'}</li>)}</ul>
-  }
-
   render() {
     return (
       <div>
@@ -81,6 +117,10 @@ class Results extends React.Component {
         {this.natureOfStopsTable(this.props.apiData)}
         {this.stopsByMonthTable(this.props.apiData)}
         {this.stopsByHourTable(this.props.apiData)}
+        {this.ageOfDriverTable(this.props.apiData)}
+        {this.dispositionTable(this.props.apiData)}
+        {this.residencyTable(this.props.apiData)}
+        {this.searchInformationTable(this.props.apiData)}
       </div>)
 
   }
