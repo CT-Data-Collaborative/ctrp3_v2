@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load staticfiles i18n %}
+{% load render_bundle from webpack_loader %}
+{% block content %}
+<div class="row">
+	<div class="gallerytitle">
+		<h2>Changing the way Connecticut uses data</h2>
+		<p>This site provides access to raw traffic stop data and tables
+		for each police district in the state for stops conducted between
+		October 1st, 2013 and September 30, 2015. New data will be posted
+		as it is released.</p>
+		<a href="/reports/tables/">
+			<i class="button-warning">Explore data tables»</i>
+		</a>
+	</div>
+</div>
+<div class="row offset">
+	<div class="col-sm-1"></div>
+	<div class="col-sm-6">
+		<div class="introduction">
+			<h2>About the project</h2>
+			<p>First enacted in 1999, Connecticut's anti-racial profiling law The Alvin W. Penn Racial Profiling
+			Prohibition Act (Public Act 99-198) prohibits any law enforcement agency from stopping, detaining,
+			or searching any motorist when the stop is motivated solely by considerations of the race, color,
+			ethnicity, age, gender or sexual orientation (Connecticut General Statutes Sections 54-1l and
+			54-1m).</p>
+			<p>During the 2012 legislative and special sessions the Connecticut General Assembly made several
+			changes to <a href="http://www.cga.ct.gov/current/pub/chap_959.htm#sec_54-1m">this law</a> including a
+			key provision which shifted responsibility for its implementation to the Office of Policy and Management
+			in consultation with a newly established Racial Profiling Prohibition Advisory Board.</p>
+			<span>
+				<a href="/about/">
+					<i class="button-large">Get more information »</i>
+				</a>
+			</span>
+		</div>
+	</div>
+	<div class="col-sm-4">
+		<div>
+			<h3>News</h3>
+            <div id="root"></div>
+			<ul>
+			</ul>
+		</div>
+	</div>
+	<div class="col-sm-1"></div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    {{ super }}
+    {% render_bundle 'table' %}
+{% endblock %}

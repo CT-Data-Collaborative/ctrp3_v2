@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load staticfiles i18n %}
+{% load render_bundle from webpack_loader %}
+
+
+{% block css %}
+    {{ block.super }}
+     <link rel="stylesheet" href="https://unpkg.com/react-select/dist/react-select.css">
+     <link rel="stylesheet" href="https://unpkg.com/react-table@latest/react-table.css">
+</link>
+{% endblock %}
+
+{% block javascript %}
+    {{ super }}
+    <script>
+        window.departments = {{ departments|safe }};
+        window.start_date = '{{ start_date }}';
+        window.end_date = '{{ end_date }}';
+        window.months = {{ month_list|safe }};
+        window.api_links = {{ api_links|safe }};
+        window.apiData = {{ api_data|safe }};
+    </script>
+    {% render_bundle 'tables' %}
+{% endblock %}
+
+{% block content %}
+    <div class="col-12">
+        <div style="width: 100%"id="root"></div>
+    </div>
+{% endblock %}
