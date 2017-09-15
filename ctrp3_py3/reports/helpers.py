@@ -8,7 +8,8 @@ from django.db import models
 from django.db.models import Avg, Count, Sum, Q, Value, CharField
 from django.db import connection
 from django.urls import reverse_lazy
-
+from django.core.cache import caches
+from django.utils.text import slugify
 import operator
 import calendar
 import maya
@@ -20,6 +21,11 @@ ethnicity_list = ['Hispanic', 'Middle Eastern', 'Not Applicable']
 RACE_AND_ETHNICITY_ROWS = ['Total', 'White Non-Hispanic', 'Black Non-Hispanic', 'Asian Non-Hispanic',
                       'Indian American / Alaskan Native Non-Hispanic', 'Hispanic']
 
+
+redis_cache = caches['default']
+
+def slug_kwargs(kwargs):
+    return '__'.join([slugify(v) for k,v in kwargs.items()])
 
 def format_month(date_str):
     if date_str is None:
@@ -129,6 +135,9 @@ def build_api_links():
 
     return links
 
+def human_month_list(month_list):
+    return [f'{calendar.month_name[m.month]} {m.year}' for m in month_list]
+
 def build_month_list(start, end, humanize=False):
     months_choices = [start]
     current = start
@@ -139,36 +148,45 @@ def build_month_list(start, end, humanize=False):
         return human_month_list(months_choices)
     return months_choices
 
-def human_month_list(month_list):
-    return [f'{calendar.month_name[m.month]} {m.year}' for m in month_list]
 
-# Build Q object from filters passed back via view
+def parse_query_date(query_date_string, end=False):
+    '''Dates are passed in as Month Year and need to be decoded. This function converts to datetimes or returns False'''
+    month, year = query_date_string.split(' ')
+
+    try:
+        parsed_date = maya.when(f'12AM {month} 1, {year}', timezone='US/Eastern')
+    except ValueError:
+        raise ValueError('Invalid date parameters')
+    if end:
+        parsed_date.add(months=1).subtract(days=1)
+    return parsed_date.datetime()
+
 def qb(**kwargs):
-    ql = []
-    keys = sorted(kwargs.keys())
-    if 'dateStart' in keys:
-        start = kwargs['dateStart']
-        month, year = start[0].split(' ')
-        start_date = maya.when(f'12AM {month} 1, {year}', timezone='US/Eastern').datetime()
-    else:
-        start = None
-    if 'dateEnd' in keys:
-        end = kwargs['dateEnd']
-        month, year = end[0].split(' ')
-        temp = maya.when(f'12AM {month} 1, {year}', timezone='US/Eastern').add(months=1).subtract(days=1)
-        endDate = temp.datetime()
-    else:
-        end = None
-    if start and end:
-        ql.append(Q(intervention_datetime__range=(start_date, endDate)))
-    elif start:
-        ql.append(Q(intervention_datetime__gte=start_date))
-    elif end:
-        ql.append(Q(intervention_datetime__lte=endDate))
-    if 'department' in keys:
-        p = kwargs['department'][0]
-        ql.append(Q(org__department_id__department_name=p))
-    return ql
+    """Build a Q object from query parameters"""
+    q_object_list = []
+
+    try:
+        start_date = parse_query_date(kwargs['dateStart'][0])
+    except ValueError:
+        start_date = None
+
+    try:
+        end_date = parse_query_date(kwargs['dateEnd'][0], end=True)
+    except ValueError:
+        end_date = None
+
+    if start_date and end_date:
+        q_object_list.append(Q(intervention_datetime__range=(start_date, end_date)))
+    elif start_date:
+        q_object_list.append(Q(intervention_datetime__gte=start_date))
+    elif end_date:
+        q_object_list.append(Q(intervention_datetime__lte=end_date))
+
+    try:
+        q_object_list.append(Q(org__department_id__department_name=kwargs['department'][0]))
+    except KeyError:
+        pass
+    return q_object_list
 
 # Take, as parameters, keys of interest
 # Return list of objects to merge in
@@ -213,6 +231,11 @@ class StopsQueryset(models.QuerySet):
 
     # TODOS Refactor traffic_stops, stop_enforcement to use new query structure
     def traffic_stops(self, **kwargs):
+        cache_key = f'traffic_stops__{slug_kwargs(kwargs)}'
+        results = redis_cache.get(cache_key)
+
+        if results:
+            return results
 
         q_list = qb(**kwargs)
         column_list = ["Traffic Stops"]
@@ -258,6 +281,7 @@ class StopsQueryset(models.QuerySet):
         for e in missing_ethnicity:
             el.append({'count': -999, 'column': e[0], 'race/ethnicity': e[1], 'percent': -999})
         l = tl + rl + el + gl
+        redis_cache.set(cache_key, l)
         return l
 
     def stop_enforcement(self,**kwargs):
@@ -267,6 +291,13 @@ class StopsQueryset(models.QuerySet):
         department -- the plain text department name
         dateRange -- a list of datetime.datetime objects
         """
+
+        cache_key = f'stop_enforcement__{slug_kwargs(kwargs)}'
+        results = redis_cache.get(cache_key)
+
+        if results:
+            return results
+
         code_choices = {'G': "General", "B": "Blind", "S": "Spot-Check"}
         q_list = qb(**kwargs)
         if q_list:
@@ -283,9 +314,17 @@ class StopsQueryset(models.QuerySet):
             qs = [x for x in qs if x['technique_code'] is not None]
         l = [{'column': code_choices[x['technique_code']], 'count': x['num_by_tech'], 'percent': round(100.0*(1.0*x['num_by_tech']) / total_count, 1)}
             for x in qs]
+        redis_cache.set(cache_key, l)
         return l
 
     def resident(self, **kwargs):
+
+        cache_key = f'resident__{slug_kwargs(kwargs)}'
+        results = redis_cache.get(cache_key)
+
+        if results:
+            return results
+
         query_parameters = qb(**kwargs)
 
         try:
@@ -304,9 +343,17 @@ class StopsQueryset(models.QuerySet):
                           'count': resident_count,
                           'percent': round(100*resident_count / total_count, 1)}]
 
+        redis_cache.set(cache_key, final_results)
         return final_results
 
     def town_resident(self, **kwargs):
+
+        cache_key = f'town_resident{slug_kwargs(kwargs)}'
+        results = redis_cache.get(cache_key)
+
+        if results:
+            return results
+
         query_parameters = qb(**kwargs)
 
         try:
@@ -322,9 +369,18 @@ class StopsQueryset(models.QuerySet):
         final_results = [{'column': 'Town/City Resident',
                           'count': resident_count,
                           'percent': round(100*resident_count / total_count, 1)}]
+
+        redis_cache.set(cache_key, final_results)
         return final_results
 
     def nature_of_stops(self, **kwargs):
+
+        cache_key = f'nature_of_stops__{slug_kwargs(kwargs)}'
+        results = redis_cache.get(cache_key)
+
+        if results:
+            return results
+
         reason_choices = {'I': "Investigative", "V": "Motor Vehicle", "E": "Equipment"}
         column_list = ['Investigative', 'Motor Vehicle', 'Equipment']
         query_parameters = qb(**kwargs)
@@ -376,9 +432,18 @@ class StopsQueryset(models.QuerySet):
             except KeyError:
                 pass
 
-        return [v for k,v in final_data_container.items()]
+        final_results = [v for k,v in final_data_container.items()]
+
+        redis_cache.set(cache_key, final_results)
+        return final_results
 
     def disposition_of_stops(self, **kwargs):
+
+        cache_key = f'disposition_of_stops__{slug_kwargs(kwargs)}'
+        results = redis_cache.get(cache_key)
+
+        if results:
+            return results
 
         disposition_code_key = {'V': 'Verbal Warning', 'W':'Written Warning', 'I':'Infraction', 'U':'UAR', 'N': 'No Disposition', 'M': 'Mis. Summons'}
         column_list = ['Verbal Warning', 'Written Warning', 'Infraction', 'UAR', 'Mis. Summons', 'No Disposition']
@@ -417,9 +482,17 @@ class StopsQueryset(models.QuerySet):
         final_data_container =  structure_results(totals_qs, race_qs, ethnicity_qs, final_data_container, totals_lookup,
                                                   lambda x: disposition_code_key[x['intervention_disposition_code']])
 
-        return [v for k, v in final_data_container.items()]
+        final_results = [v for k, v in final_data_container.items()]
+        redis_cache.set(cache_key, final_results)
+        return final_results
 
     def statuatory_authority(self,**kwargs):
+
+        cache_key = f'statutory_authority__{slug_kwargs(kwargs)}'
+        results = redis_cache.get(cache_key)
+
+        if results:
+            return results
 
         column_list = ['Registration', 'Seatbelt', 'Equipment Violation', 'Cell Phone', 'Suspended License',
                        'Speed Related', 'Other', 'Moving Violation', 'Defective Lights', 'Display of Plates',
@@ -463,10 +536,19 @@ class StopsQueryset(models.QuerySet):
         final_data_container = structure_results(totals_qs, race_qs, ethnicity_qs, final_data_container,
                                                  totals_lookup, lambda x: x['statutory_reason_for_stop'])
 
+        final_results = [v for k, v in final_data_container.items()]
+        redis_cache.set(cache_key, final_results)
+        return final_results
 
-        return [v for k,v in final_data_container.items()]
 
     def stops_by_month(self,**kwargs):
+
+        cache_key = f'stop_by_month__{slug_kwargs(kwargs)}'
+        results = redis_cache.get(cache_key)
+
+        if results:
+            return results
+
         query_parameters = qb(**kwargs)
         truncate_date = connection.ops.date_trunc_sql('month', '"intervention_datetime"')
 
@@ -485,9 +567,19 @@ class StopsQueryset(models.QuerySet):
             order_by('month')
 
         final_results = [{'count': x['pk__count'], 'month': format_month(x['month'])} for x in results_queryset]
+
+        redis_cache.set(cache_key, final_results)
+
         return final_results
 
     def stops_by_hour(self, **kwargs):
+
+        cache_key = f'stops_by-hour__{slug_kwargs(kwargs)}'
+        results = redis_cache.get(cache_key)
+
+        if results:
+            return results
+
         query_parameters = qb(**kwargs)
 
         try:
@@ -505,9 +597,17 @@ class StopsQueryset(models.QuerySet):
             values('hour').annotate(Count('pk')).order_by('hour')
 
         final_results = [{'count': x['pk__count'], 'hour': format_hour(x['hour'])} for x in results_queryset]
+        redis_cache.set(cache_key, final_results)
+
         return final_results
 
     def stops_by_age(self, **kwargs):
+
+        cache_key = f'stops_by_age__{slug_kwargs(kwargs)}'
+        results = redis_cache.get(cache_key)
+
+        if results:
+            return results
 
         age_buckets = {1: "16 to 25", 2: "25 to 40", 3: "40 to 60", 4: "60+", 5: "None"}
         column_list = ["16 to 25", "25 to 40", "40 to 60", "60+"]
@@ -579,9 +679,18 @@ class StopsQueryset(models.QuerySet):
                                                  exclude=exclude_age_function,
                                                  count_key='pk__count')
 
-        return [v for k, v in final_data_container.items()]
+        final_results = [v for k, v in final_data_container.items()]
+        redis_cache.set(cache_key, final_results)
+        return final_results
 
     def search_information(self, **kwargs):
+
+        cache_key = f'search_information__{slug_kwargs(kwargs)}'
+        results = redis_cache.get(cache_key)
+
+        if results:
+            return results
+
         column_list = ['Cars Searched', 'Consent', 'Inventory', 'Other', 'Contraband Found']
 
         final_data_container = build_final_data_container(column_list)
@@ -741,4 +850,6 @@ class StopsQueryset(models.QuerySet):
             except KeyError:
                 pass
 
-        return [v for k,v in final_data_container.items()]
+        final_results = [v for k, v in final_data_container.items()]
+        redis_cache.set(cache_key, final_results)
+        return final_results

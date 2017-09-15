@@ -34,12 +34,27 @@ EMAIL_BACKEND = env('DJANGO_EMAIL_BACKEND',
 
 # CACHING
 # ------------------------------------------------------------------------------
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#         'LOCATION': ''
+#     }
+# }
+
+REDIS_LOCATION = '{0}/{1}'.format(env('REDIS_URL', default='redis://0.0.0.0:6379'), 0)
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': ''
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': REDIS_LOCATION,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'IGNORE_EXCEPTIONS': True,  # mimics memcache behavior.
+                                        # http://niwinz.github.io/django-redis/latest/#_memcached_exceptions_behavior
+        }
     }
 }
+
+
 
 # django-debug-toolbar
 # ------------------------------------------------------------------------------

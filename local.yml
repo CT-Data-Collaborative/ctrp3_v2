@@ -12,24 +12,31 @@ services:
       - postgres_backup_dev:/backups
     environment:
       - POSTGRES_USER=ctrp3_py3
-
-  django:
-    build:
-      context: .
-      dockerfile: ./compose/django/Dockerfile-dev
-    command: /start-dev.sh
-    depends_on:
-      - postgres
-    environment:
-      - POSTGRES_USER=ctrp3_py3
-      - USE_DOCKER=yes
-      - DATA_START=10/01/2013
-      - DATA_END=9/30/2016
-    volumes:
-      - .:/app
     ports:
-      - "8000:8000"
+      - "5432:5432"
 
+  redis:
+    image: redis:3.0
+    ports:
+      - "6379:6379"
 
-
-
+#  django:
+#    build:
+#      context: .
+#      dockerfile: ./compose/django/Dockerfile-dev
+#    command: /start-dev.sh
+#    depends_on:
+#      - postgres
+#    environment:
+#      - POSTGRES_USER=ctrp3_py3
+#      - USE_DOCKER=yes
+#      - DATA_START=10/01/2013
+#      - DATA_END=9/30/2016
+#    volumes:
+#      - .:/app
+#    ports:
+#      - "8000:8000"
+#
+#
+#
+#

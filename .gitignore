@@ -72,3 +72,5 @@ rawdata/*.json
 rawdata/
 
 .travis.yml
+
+./venv/
