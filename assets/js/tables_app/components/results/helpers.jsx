@@ -24,13 +24,11 @@ function columnHelper(column_list) {
       columns: [{
         Header: 'Stops',
         id: column_name + 'count',
-        accessor: d => d[column_name]['count'],
-        maxWidth: 200
+        accessor: d => d[column_name]['count']
       }, {
         Header: 'Percent',
         id: column_name + 'percent',
-        accessor: d => d[column_name]['percent'],
-        maxWidth: 200
+        accessor: d => d[column_name]['percent']
       }]
     }
     columns.push(column)
@@ -39,20 +37,34 @@ function columnHelper(column_list) {
   return columns;
 }
 
+function simpleColumnHelper(column_list, first_column_accessor) {
+  let columns = [{
+    Header: '',
+    accessor: first_column_accessor
+  }];
+  column_list.forEach((column_name) => {
+    let column = {
+      Header: column_name,
+      id: column_name + 'percent',
+      accessor: d => d[column_name]['percent']
+    };
+    columns.push(column);
+  });
+  return columns;
+}
+
 
 export function buildStopTable(data) {
   const columns = [{
     Header: '',
     accessor: 'race/ethnicity',
-    maxWidth: 400
+    minWidth: 300
   }, {
     Header: 'Count',
     accessor: 'count',
-    maxWidth: 200
   }, {
     Header: 'Percent',
     accessor: 'percent',
-    maxWidth: 200
   }];
 
   return makeTable(columns, data)
@@ -61,7 +73,8 @@ export function buildStopTable(data) {
 export function buildStopEnforcementMethodTable(data) {
   const columns = [{
     Header: 'Enforcement Method',
-    accessor: 'column'
+    accessor: 'column',
+    minWidth: 200
   }, {
     Header: 'Count',
     accessor: 'count'
@@ -276,5 +289,16 @@ export function buildSearchInformationTable(data) {
    const column_names = ['Cars Searched', 'Consent', 'Inventory', 'Other', 'Contraband Found'];
    const columns = columnHelper(column_names);
 
+  return makeTable(columns, data)
+}
+
+export function buildStopAuthorityTable(data) {
+  // const column_names = ['Cell Phone', 'Defective Lights', 'Display of Plates', 'Equipment Violation',
+  //   'Moving Violation', 'Other', 'Registration', 'Seatbelt', 'Speed Related', ' Suspended License',
+  //   'Traffic Control Signal', 'Window Tint'];
+  const column_names = ["White Non-Hispanic", "Black Non-Hispanic", "Asian Non-Hispanic", "Hispanic",
+    "Indian American / Alaskan Native Non-Hispanic", "Total"];
+  console.log(data);
+  const columns = simpleColumnHelper(column_names, "authority");
   return makeTable(columns, data)
 }

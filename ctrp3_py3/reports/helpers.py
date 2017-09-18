@@ -61,7 +61,18 @@ def exclude_age_function(row):
         return False
 
 def structure_results(totals_qs, race_qs, ethnicity_qs, final_data_container, totals_lookup, column_getter, exclude=None, count_key=None):
+    """Helper function for building final data output
 
+    Needs a lot of work. Should first consider converting positional to keyword arguments, including some defaults for
+    column_getter
+
+    Also need to document how it works. What does exclude do and why?
+
+    Keyword Arguments:
+        column_getter: a function for getting the column out of a row
+        exclude: a function that determines if a given row should be filtered out
+        count_key: a function that can be used for accessing the 'count' value of a row.
+    """
     all_results = list(chain(totals_qs, race_qs, ethnicity_qs))
 
     for row in all_results:
@@ -91,6 +102,50 @@ def structure_results(totals_qs, race_qs, ethnicity_qs, final_data_container, to
             pass
 
     return final_data_container
+
+
+def pivot(data=None, data_row_label=None, row_list=None, row_label=None, column_list=None):
+    """Pivot a processed data structure.
+
+    Keyword Arguments:
+        data: The already processed dataset. Should be a list of dicts
+        data_row_label: Accessor for the current row label
+        row_list: The list of the new row labels.
+        row_label: The key that should be used for each new row
+        column_list: The list of the new column labels.
+
+    Returns a list of dicts
+    """
+    if not data:
+        raise ValueError("Incorrect data structures")
+
+    if not data_row_label:
+        raise ValueError("A row label is required to pivot")
+
+    if not row_list:
+        raise ValueError("List of rows is required")
+
+    if not row_label:
+        raise ValueError("A row label is required to pivot")
+
+    if not column_list:
+        raise ValueError("List of columns is required")
+
+    new_final_data = OrderedDict()
+    for column in column_list:
+        new_final_data[column] = {}
+        new_final_data[column][row_label] = column
+        for row in row_list:
+            new_final_data[column][row] = {'count': -999, 'percent': -999}
+
+    for row in data:
+        label = row[data_row_label]
+        columns = [k for k,v in row.items() if k != data_row_label]
+        for column in columns:
+            existing_data = row[column]
+            new_final_data[column][label] = existing_data
+
+    return [v for k,v in new_final_data.items()]
 
 def build_total_lookup(total_count, totals_by_race, totals_by_ethnicity):
     totals_lookup = {'Total': total_count}
@@ -147,7 +202,6 @@ def build_month_list(start, end, humanize=False):
     if humanize:
         return human_month_list(months_choices)
     return months_choices
-
 
 def parse_query_date(query_date_string, end=False):
     '''Dates are passed in as Month Year and need to be decoded. This function converts to datetimes or returns False'''
@@ -491,8 +545,8 @@ class StopsQueryset(models.QuerySet):
         cache_key = f'statutory_authority__{slug_kwargs(kwargs)}'
         results = redis_cache.get(cache_key)
 
-        if results:
-            return results
+        # if results:
+        #     return results
 
         column_list = ['Registration', 'Seatbelt', 'Equipment Violation', 'Cell Phone', 'Suspended License',
                        'Speed Related', 'Other', 'Moving Violation', 'Defective Lights', 'Display of Plates',
@@ -538,7 +592,8 @@ class StopsQueryset(models.QuerySet):
 
         final_results = [v for k, v in final_data_container.items()]
         redis_cache.set(cache_key, final_results)
-        return final_results
+
+        return pivot(data=final_results, data_row_label='race/ethnicity', row_list=RACE_AND_ETHNICITY_ROWS, row_label='authority', column_list=column_list)
 
 
     def stops_by_month(self,**kwargs):

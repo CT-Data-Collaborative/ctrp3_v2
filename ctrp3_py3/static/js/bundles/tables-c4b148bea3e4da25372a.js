@@ -26096,11 +26096,16 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
         'div',
         { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-md' },
         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-          'h4',
+          'h5',
           null,
           'Traffic Stops'
         ),
-        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["g" /* buildStopTable */])(data['Traffic Stops'])
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'p',
+          null,
+          'Summary of traffic stops by race, ethnicity and gender.'
+        ),
+        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["h" /* buildStopTable */])(data['Traffic Stops'])
       );
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
@@ -26111,13 +26116,18 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
     if (this.state.display['Stop Enforcement Method'] == true) {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'div',
-        { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-md' },
+        { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-sm' },
         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-          'h4',
+          'h5',
           null,
           'Stop Enforcement Method'
         ),
-        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["f" /* buildStopEnforcementMethodTable */])(data['Stop Enforcement Method'])
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'p',
+          null,
+          'Summarizes the enforcement method used to conduct the traffic stop. Blind Enforcement include for example: radar/laser, license plate readers, DUI checkpoints, and truck weighing operations. Spot check includes: seat belt use, cellphone use, or any other activity except DUI checks. For Spot checks, traffic stop information is only collected when action is taken. General includes all other stops. Percentages are derived from the total number of people stopped.'
+        ),
+        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["g" /* buildStopEnforcementMethodTable */])(data['Stop Enforcement Method'])
       );
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
@@ -26130,9 +26140,14 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
         'div',
         { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg' },
         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-          'h4',
+          'h5',
           null,
           'Nature of the Traffic Stop'
+        ),
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'p',
+          null,
+          'Police are required to identify the nature of the stop in one of three categories: 1) Investigative, Criminal; 2) Violation, Motor Vehicle; or 3) Equipment, Motor Vehicle.'
         ),
         Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["c" /* buildNatureOfStopTable */])(data['Nature of the Traffic Stop'])
       );
@@ -26151,7 +26166,7 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
           null,
           'Stops by Month'
         ),
-        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["i" /* buildStopsByMonthTable */])(data['Stops by Month'])
+        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["j" /* buildStopsByMonthTable */])(data['Stops by Month'])
       );
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
@@ -26168,7 +26183,7 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
           null,
           'Stop by Hour'
         ),
-        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["h" /* buildStopsByHourTable */])(data['Stops by Hour'])
+        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["i" /* buildStopsByHourTable */])(data['Stops by Hour'])
       );
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
@@ -26181,9 +26196,14 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
         'div',
         { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg' },
         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-          'h4',
+          'h5',
           null,
           'Age of the Driver'
+        ),
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'p',
+          null,
+          'Summarizes the age of the driver stopped into four age groups by race and ethnicity. Percentages are derived from the total number of people stopped.'
         ),
         Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["a" /* buildAgeOfDriverTable */])(data['Age of the Driver'])
       );
@@ -26215,9 +26235,14 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
         'div',
         { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-sm' },
         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-          'h4',
+          'h5',
           null,
           'Residency Information'
+        ),
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'p',
+          null,
+          'Stopped driver residency information. Percentages are derived from the total number of people.'
         ),
         Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["d" /* buildResidencyTable */])(data['Residency Information'])
       );
@@ -26232,9 +26257,14 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
         'div',
         { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg' },
         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-          'h4',
+          'h5',
           null,
           'Search Information'
+        ),
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'p',
+          null,
+          'Summarizes car searches, the authority for the search and whether contraband was found as a result of the search. Percentages are derived from the total number of people stopped for each race/ethnicity.'
         ),
         Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["e" /* buildSearchInformationTable */])(data['Search Information'])
       );
@@ -26243,6 +26273,25 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
     }
   }
 
+  statutoryAuthorityTable(data) {
+    if (this.state.display['Statutory Authority Cited for Stop'] == true) {
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg' },
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'h5',
+          null,
+          'Statutory Authority Cited for Stop'
+        ),
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'p',
+          null,
+          'Police officers are required to identify the statutory authority for the stop. These categories are aggregations. In addition, these categories do not reflect additional citations issued during the course of the stop.'
+        ),
+        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["f" /* buildStopAuthorityTable */])(data['Statutory Authority Cited for Stop'])
+      );
+    }
+  }
   componentWillReceiveProps(nextProps) {
     let display = {};
 
@@ -26269,7 +26318,8 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
       this.ageOfDriverTable(this.props.apiData),
       this.dispositionTable(this.props.apiData),
       this.residencyTable(this.props.apiData),
-      this.searchInformationTable(this.props.apiData)
+      this.searchInformationTable(this.props.apiData),
+      this.statutoryAuthorityTable(this.props.apiData)
     );
   }
 }
@@ -26281,15 +26331,16 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (immutable) */ __webpack_exports__["g"] = buildStopTable;
-/* harmony export (immutable) */ __webpack_exports__["f"] = buildStopEnforcementMethodTable;
-/* harmony export (immutable) */ __webpack_exports__["h"] = buildStopsByHourTable;
-/* harmony export (immutable) */ __webpack_exports__["i"] = buildStopsByMonthTable;
+/* harmony export (immutable) */ __webpack_exports__["h"] = buildStopTable;
+/* harmony export (immutable) */ __webpack_exports__["g"] = buildStopEnforcementMethodTable;
+/* harmony export (immutable) */ __webpack_exports__["i"] = buildStopsByHourTable;
+/* harmony export (immutable) */ __webpack_exports__["j"] = buildStopsByMonthTable;
 /* harmony export (immutable) */ __webpack_exports__["d"] = buildResidencyTable;
 /* harmony export (immutable) */ __webpack_exports__["c"] = buildNatureOfStopTable;
 /* harmony export (immutable) */ __webpack_exports__["a"] = buildAgeOfDriverTable;
 /* harmony export (immutable) */ __webpack_exports__["b"] = buildDispositionTable;
 /* harmony export (immutable) */ __webpack_exports__["e"] = buildSearchInformationTable;
+/* harmony export (immutable) */ __webpack_exports__["f"] = buildStopAuthorityTable;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_table__ = __webpack_require__(545);
@@ -26320,13 +26371,11 @@ function columnHelper(column_list) {
       columns: [{
         Header: 'Stops',
         id: column_name + 'count',
-        accessor: d => d[column_name]['count'],
-        maxWidth: 200
+        accessor: d => d[column_name]['count']
       }, {
         Header: 'Percent',
         id: column_name + 'percent',
-        accessor: d => d[column_name]['percent'],
-        maxWidth: 200
+        accessor: d => d[column_name]['percent']
       }]
     };
     columns.push(column);
@@ -26335,19 +26384,33 @@ function columnHelper(column_list) {
   return columns;
 }
 
+function simpleColumnHelper(column_list, first_column_accessor) {
+  let columns = [{
+    Header: '',
+    accessor: first_column_accessor
+  }];
+  column_list.forEach(column_name => {
+    let column = {
+      Header: column_name,
+      id: column_name + 'percent',
+      accessor: d => d[column_name]['percent']
+    };
+    columns.push(column);
+  });
+  return columns;
+}
+
 function buildStopTable(data) {
   const columns = [{
     Header: '',
     accessor: 'race/ethnicity',
-    maxWidth: 400
+    minWidth: 300
   }, {
     Header: 'Count',
-    accessor: 'count',
-    maxWidth: 200
+    accessor: 'count'
   }, {
     Header: 'Percent',
-    accessor: 'percent',
-    maxWidth: 200
+    accessor: 'percent'
   }];
 
   return makeTable(columns, data);
@@ -26356,7 +26419,8 @@ function buildStopTable(data) {
 function buildStopEnforcementMethodTable(data) {
   const columns = [{
     Header: 'Enforcement Method',
-    accessor: 'column'
+    accessor: 'column',
+    minWidth: 200
   }, {
     Header: 'Count',
     accessor: 'count'
@@ -26570,6 +26634,16 @@ function buildSearchInformationTable(data) {
   const column_names = ['Cars Searched', 'Consent', 'Inventory', 'Other', 'Contraband Found'];
   const columns = columnHelper(column_names);
 
+  return makeTable(columns, data);
+}
+
+function buildStopAuthorityTable(data) {
+  // const column_names = ['Cell Phone', 'Defective Lights', 'Display of Plates', 'Equipment Violation',
+  //   'Moving Violation', 'Other', 'Registration', 'Seatbelt', 'Speed Related', ' Suspended License',
+  //   'Traffic Control Signal', 'Window Tint'];
+  const column_names = ["White Non-Hispanic", "Black Non-Hispanic", "Asian Non-Hispanic", "Hispanic", "Indian American / Alaskan Native Non-Hispanic", "Total"];
+  console.log(data);
+  const columns = simpleColumnHelper(column_names, "authority");
   return makeTable(columns, data);
 }
 
