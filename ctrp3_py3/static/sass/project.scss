@@ -1,7 +1,3 @@
-
-
-
-
 // project specific CSS goes here
 
 ////////////////////////////////
@@ -62,6 +58,7 @@ $red: #b94a48;
   }
 }
 
+
 ////////////////////////////////
 		//Django Toolbar//
 ////////////////////////////////
@@ -73,3 +70,12 @@ $red: #b94a48;
 [hidden][style="display: block;"] {
   display: block !important;
 }
+
+@import 'partials/variables';
+@import 'partials/template';
+@import 'partials/nav';
+@import 'partials/footer';
+@import 'partials/hero';
+@import 'partials/link-list';
+@import 'partials/selectors';
+@import 'partials/react_table_ctdata_style';

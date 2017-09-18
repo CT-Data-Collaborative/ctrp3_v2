@@ -1,5 +1,6 @@
 import React from 'react';
-import { buildNatureOfStopTable,
+import {
+  buildNatureOfStopTable,
   buildStopTable,
   buildStopsByMonthTable,
   buildStopsByHourTable,
@@ -23,7 +24,13 @@ class Results extends React.Component {
 
   trafficStopTable(data) {
     if (this.state.display['Traffic Stops'] == true) {
-      return buildStopTable(data['Traffic Stops'])
+      return (
+        <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-md">
+          <h4>Traffic Stops</h4>
+          {buildStopTable(data['Traffic Stops'])}
+        </div>
+      )
+
     } else {
       return <div></div>
     }
@@ -31,7 +38,12 @@ class Results extends React.Component {
 
   stopEnforcementTable(data) {
     if (this.state.display['Stop Enforcement Method'] == true) {
-      return buildStopEnforcementMethodTable(data['Stop Enforcement Method'])
+      return (
+        <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-md">
+          <h4>Stop Enforcement Method</h4>
+          {buildStopEnforcementMethodTable(data['Stop Enforcement Method'])}
+        </div>
+      )
     } else {
       return <div></div>
     }
@@ -39,7 +51,12 @@ class Results extends React.Component {
 
   natureOfStopsTable(data) {
     if (this.state.display['Nature of the Traffic Stop'] == true) {
-      return buildNatureOfStopTable(data['Nature of the Traffic Stop'])
+      return (
+        <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg">
+          <h4>Nature of the Traffic Stop</h4>
+          {buildNatureOfStopTable(data['Nature of the Traffic Stop'])}
+        </div>
+      )
     } else {
       return <div></div>
     }
@@ -47,7 +64,12 @@ class Results extends React.Component {
 
   stopsByMonthTable(data) {
     if (this.state.display['Stops by Month'] == true) {
-      return buildStopsByMonthTable(data['Stops by Month'])
+      return (
+        <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-sm">
+          <h4>Stops by Month</h4>
+          {buildStopsByMonthTable(data['Stops by Month'])}
+        </div>
+      )
     } else {
       return <div></div>
     }
@@ -55,7 +77,12 @@ class Results extends React.Component {
 
   stopsByHourTable(data) {
     if (this.state.display['Stops by Hour'] == true) {
-      return buildStopsByHourTable(data['Stops by Hour'])
+      return (
+        <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-sm">
+          <h4>Stop by Hour</h4>
+          {buildStopsByHourTable(data['Stops by Hour'])}
+        </div>
+      )
     } else {
       return <div></div>
     }
@@ -63,7 +90,12 @@ class Results extends React.Component {
 
   ageOfDriverTable(data) {
     if (this.state.display['Age of the Driver'] == true) {
-      return buildAgeOfDriverTable(data['Age of the Driver'])
+      return (
+        <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg">
+          <h4>Age of the Driver</h4>
+          {buildAgeOfDriverTable(data['Age of the Driver'])}
+        </div>
+      )
     } else {
       return <div></div>
     }
@@ -71,7 +103,12 @@ class Results extends React.Component {
 
   dispositionTable(data) {
     if (this.state.display['Disposition of the Traffic Stop'] == true) {
-      return buildDispositionTable(data['Disposition of the Traffic Stop'])
+      return (
+        <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg">
+          <h4>Disposition of the Traffic Stop</h4>
+          {buildDispositionTable(data['Disposition of the Traffic Stop'])}
+        </div>
+      )
     } else {
       return <div></div>
     }
@@ -79,7 +116,11 @@ class Results extends React.Component {
 
   residencyTable(data) {
     if (this.state.display['Residency Information'] == true) {
-      return buildResidencyTable(data['Residency Information'])
+      return (
+        <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-sm">
+          <h4>Residency Information</h4>
+          {buildResidencyTable(data['Residency Information'])}
+        </div>)
     } else {
       return <div></div>
     }
@@ -87,12 +128,14 @@ class Results extends React.Component {
 
   searchInformationTable(data) {
     if (this.state.display['Search Information'] == true) {
-      return buildSearchInformationTable(data['Search Information'])
+      return (<div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg">
+        <h4>Search Information</h4>{buildSearchInformationTable(data['Search Information'])}</div>)
     } else {
       return <div></div>
     }
 
   }
+
   componentWillReceiveProps(nextProps) {
     let display = {};
 
@@ -105,13 +148,12 @@ class Results extends React.Component {
     });
 
 
-    this.setState({ display })
+    this.setState({display})
   }
 
   render() {
     return (
       <div>
-        <h3>Results</h3>
         {this.trafficStopTable(this.props.apiData)}
         {this.stopEnforcementTable(this.props.apiData)}
         {this.natureOfStopsTable(this.props.apiData)}

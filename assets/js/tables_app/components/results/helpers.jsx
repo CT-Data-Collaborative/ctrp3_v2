@@ -10,9 +10,6 @@ function makeTable(columns, data) {
     showPageSizeOptions={false}
     showPagination={false}
     defaultPageSize={data.length}
-    style={{
-        height: '400px' // This will force the table body to overflow and scroll, since there is not enough room
-    }}
   />)
 }
 
@@ -25,13 +22,15 @@ function columnHelper(column_list) {
     let column = {
       Header: column_name,
       columns: [{
-        'Header': 'Stops',
-        'id': column_name + 'count',
-        'accessor': d => d[column_name]['count']
+        Header: 'Stops',
+        id: column_name + 'count',
+        accessor: d => d[column_name]['count'],
+        maxWidth: 200
       }, {
-        'Header': 'Percent',
-        'id': column_name + 'percent',
-        'accessor': d => d[column_name]['percent']
+        Header: 'Percent',
+        id: column_name + 'percent',
+        accessor: d => d[column_name]['percent'],
+        maxWidth: 200
       }]
     }
     columns.push(column)
@@ -44,13 +43,16 @@ function columnHelper(column_list) {
 export function buildStopTable(data) {
   const columns = [{
     Header: '',
-    accessor: 'race/ethnicity'
+    accessor: 'race/ethnicity',
+    maxWidth: 400
   }, {
     Header: 'Count',
-    accessor: 'count'
+    accessor: 'count',
+    maxWidth: 200
   }, {
     Header: 'Percent',
-    accessor: 'percent'
+    accessor: 'percent',
+    maxWidth: 200
   }];
 
   return makeTable(columns, data)

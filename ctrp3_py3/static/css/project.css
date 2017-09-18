@@ -1,38 +1,252 @@
-/* These styles are generated from project.scss. */
-
+@import url(https://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700);
+@import url(https://fonts.googleapis.com/css?family=Roboto:400,500,700);
+@import url(https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Trocchi:400,700);
 .alert-debug {
-  color: black;
-  background-color: white;
+  background-color: #fff;
   border-color: #d6e9c6;
-}
+  color: #000; }
 
 .alert-error {
-  color: #b94a48;
   background-color: #f2dede;
   border-color: #eed3d7;
-}
+  color: #b94a48; }
 
-/* This is a fix for the bootstrap4 alpha release */
+.navbar {
+  border-radius: 0px; }
+
 @media (max-width: 47.9em) {
   .navbar-nav .nav-item {
-    float: none;
-    width: 100%;
     display: inline-block;
-  }
-
+    float: none;
+    width: 100%; }
   .navbar-nav .nav-item + .nav-item {
-    margin-left: 0;
-  }
-
+    margin-left: 0; }
   .nav.navbar-nav.pull-xs-right {
-    float: none !important;
-  }
-}
+    float: none !important; } }
 
-/* Display django-debug-toolbar.
-   See https://github.com/django-debug-toolbar/django-debug-toolbar/issues/742
-   and https://github.com/pydanny/cookiecutter-django/issues/317
-*/
 [hidden][style="display: block;"] {
-  display: block !important;
-}
+  display: block !important; }
+
+.extra-dark-blue {
+  background: #4670A7; }
+
+.dark-blue {
+  background: #1EACF1; }
+
+.medium-blue {
+  background: #63D1F4; }
+
+.light-blue {
+  background: #9EDDFC; }
+
+.extra-light-blue {
+  background: #CDEFFE; }
+
+.light-grey {
+  background: #ececec; }
+
+.white {
+  background: #fff; }
+
+.light-grey--text {
+  color: #ececec; }
+
+* {
+  font: 16px "Montserrat", sans-serif;
+  color: #4A4A4A; }
+  * h1, * h2, * h3, * h4, * h5 {
+    font-family: "Trocchi", serif; }
+
+html, body {
+  font-size: 16px !important; }
+
+#main {
+  overflow-y: scroll;
+  height: calc(100vh - 6rem); }
+
+.ctdata-ctrp3-app {
+  width: 100%; }
+
+.ctdata-navbar {
+  height: 48px;
+  height: 3rem;
+  width: 100%;
+  background-color: #4670A7;
+  border-radius: 0; }
+  .ctdata-navbar ul.logo-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 4px 0 0 0;
+    padding: .25rem 0 0 0;
+    float: right; }
+    .ctdata-navbar ul.logo-list li {
+      float: left;
+      margin: 6.4px 8px 6.4px 8px;
+      margin: .4rem .5rem .4rem .5rem;
+      padding: 0; }
+    .ctdata-navbar ul.logo-list .logo-small {
+      float: right; }
+    .ctdata-navbar ul.logo-list a {
+      color: #d2e4e7;
+      text-decoration: none;
+      font-size: 13.6px;
+      font-size: .85rem;
+      font-family: "Roboto Condensed", sans-serif; }
+    .ctdata-navbar ul.logo-list a:hover {
+      color: #fff;
+      text-decoration: none; }
+    .ctdata-navbar ul.logo-list a.social {
+      padding: 0; }
+  .ctdata-navbar .logo-circle {
+    margin-top: .25em;
+    margin-right: .25em;
+    border-radius: 50%;
+    width: 1em;
+    height: 1em;
+    float: right; }
+  .ctdata-navbar .logo-link {
+    font-size: 13.6px;
+    font-size: 0.85rem;
+    font-weight: 300;
+    padding: 0 .5em 0 0;
+    display: inline; }
+  .ctdata-navbar .logo-link:after {
+    content: "Created by Connecticut Data Collaborative"; }
+
+.footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(2rem+6px);
+  background: #333;
+  color: white;
+  width: 100%; }
+  .footer .copyright p {
+    font-family: "Roboto Condensed", sans-serif;
+    width: 100%;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 1em;
+    color: lightgrey;
+    padding-top: 2px; }
+
+@media screen and (max-width: 400px) {
+  .footer .copyright p {
+    font-size: .75rem;
+    padding-left: .5rem;
+    padding-right: .5rem; } }
+
+.image-container {
+  position: relative;
+  height: 415px;
+  width: 100%;
+  overflow: hidden;
+  margin-bottom: 32px;
+  margin-bottom: 2rem; }
+
+.image-container .after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: rgba(0, 0, 0, 0.45);
+  color: #FFF; }
+
+.hero-text {
+  position: relative;
+  text-align: center;
+  top: 125px;
+  font-size: 80px;
+  font-size: 5rem;
+  color: #fff; }
+
+@media screen and (max-width: 725px) {
+  .hero-text {
+    font-size: 2.5rem; } }
+
+.link-list {
+  list-style-type: none;
+  padding-left: 0;
+  text-align: center;
+  margin-top: 32px;
+  margin-top: 2rem; }
+
+.link-list__item--button {
+  display: inline;
+  padding: 16px;
+  padding: 1rem;
+  margin: 8px 8px 8px 0;
+  margin: .5rem .5rem .5rem 0;
+  background-color: #4670A7; }
+
+.link-list__item--button:hover {
+  background-color: #DEDEDE; }
+
+.link-list__link {
+  text-decoration: none;
+  padding: 16px;
+  padding: 1rem;
+  margin: -16px;
+  margin: -1rem;
+  font-size: 24px;
+  font-size: 1.5rem; }
+
+.link-list__link:hover {
+  color: #4670A7;
+  text-decoration: none; }
+
+.links-row {
+  padding-top: 32px;
+  padding-top: 2rem; }
+
+@media (max-width: 800px) {
+  .link-list__item--button {
+    display: block; } }
+
+.ctdata-linked-selector {
+  width: 50%;
+  float: left; }
+
+.ctdata-linked-selector__first {
+  padding-right: 16px;
+  padding-right: 1rem; }
+
+.ctdata-ctrp3-results-table {
+  padding-top: 16px;
+  padding-top: 1rem;
+  margin: 16px 0;
+  margin: 1rem 0;
+  clear: both; }
+
+.rt-thead {
+  background-color: #63D1F4;
+  color: #4a4a4a; }
+  .rt-thead .rt-tr {
+    text-align: right !important;
+    background-color: #63D1F4;
+    color: #4a4a4a; }
+    .rt-thead .rt-tr .rt-resizable-header:first-of-type .rt-resizable-header-content {
+      text-align: left !important; }
+
+.rt-tbody .rt-tr .rt-td {
+  text-align: right !important; }
+
+.rt-tbody .rt-tr .rt-td:first-of-type {
+  text-align: left !important; }
+
+.ctdata-ctrp3-results-table-md {
+  width: 60%; }
+
+.ctdata-ctrp3-results-table-sm {
+  width: 40%; }
+
+.ctdata-ctrp3-results-table-lg {
+  width: 100%; }
+
+@media (max-width: 1000px) {
+  .ctdata-ctrp3-results-table-lg, .ctdata-ctrp3-results-table-md, .ctdata-ctrp3-results-table-sm {
+    width: 100%; } }

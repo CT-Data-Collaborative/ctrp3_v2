@@ -1,11 +1,10 @@
 /**
  * Created by scuerda on 7/20/17.
  */
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 
 import Department from './components/department';
 import DateRange from './components/timeperiod';
-import Links from './components/links';
 import Results from './components/results';
 
 class App extends Component {
@@ -18,7 +17,7 @@ class App extends Component {
       endDate: window.months[window.months.length - 1],
       apiLinks: window.api_links,
       apiData: window.apiData,
-      selectedAnalyses: []
+      selectedAnalyses: Object.keys(window.apiData)
     };
 
 
@@ -27,7 +26,6 @@ class App extends Component {
     this.updateEndDate = this.updateEndDate.bind(this);
     this.updateData = this.updateData.bind(this);
     this.getData = this.getData.bind(this);
-    this.updateSelectedAnalyses = this.updateSelectedAnalyses.bind(this)
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -39,9 +37,6 @@ class App extends Component {
       this.getData(this.state.selectedDepartment, this.state.startDate, this.state.endDate, this.state.selectedAnalyses)
     }
     if (this.state.endDate != prevState.endDate) {
-      this.getData(this.state.selectedDepartment, this.state.startDate, this.state.endDate, this.state.selectedAnalyses)
-    }
-    if (this.state.selectedAnalyses != prevState.selectedAnalyses) {
       this.getData(this.state.selectedDepartment, this.state.startDate, this.state.endDate, this.state.selectedAnalyses)
     }
   }
@@ -58,19 +53,19 @@ class App extends Component {
       const cachedData = sessionStorage.getItem(url);
 
       if (cachedData) {
-        resolve({ 'name': item, 'data': JSON.parse(cachedData) });
+        resolve({'name': item, 'data': JSON.parse(cachedData)});
       }
       else {
         fetch(url)
           .then((response) => {
-          if (response.status >= 400) {
-            reject(response.status, "Bad response from server");
-          }
-          return response.json();
+            if (response.status >= 400) {
+              reject(response.status, "Bad response from server");
+            }
+            return response.json();
           })
           .then((data) => {
             sessionStorage.setItem(url, JSON.stringify(data));
-            resolve({ 'name': item, 'data': data })
+            resolve({'name': item, 'data': data})
           })
       }
 
@@ -109,13 +104,13 @@ class App extends Component {
 
 
     Promise.all(urlPromises)
-      .then(function(results) {
+      .then(function (results) {
         results.forEach((r) => {
           apiData[r.name] = r.data;
         });
         updateData(apiData)
       })
-      .catch(function(err) {
+      .catch(function (err) {
         console.log("Failed: ", err);
       });
 
@@ -123,23 +118,19 @@ class App extends Component {
   }
 
   updateSelectedDept(d) {
-    this.setState({ selectedDepartment: d });
+    this.setState({selectedDepartment: d});
   }
 
   updateStartDate(d) {
-    this.setState({ startDate: d });
+    this.setState({startDate: d});
   }
 
   updateEndDate(d) {
-    this.setState({ endDate: d });
-  }
-
-  updateSelectedAnalyses(selectedAnalyses) {
-    this.setState({ selectedAnalyses });
+    this.setState({endDate: d});
   }
 
   updateData(newData) {
-    this.setState({ apiData: newData });
+    this.setState({apiData: newData});
   }
 
   infoHeader() {
@@ -147,9 +138,9 @@ class App extends Component {
     const startDate = this.state.startDate;
     const endDate = this.state.endDate;
     if (selectedDept) {
-      return <h3>{selectedDept}, {startDate} to {endDate}</h3>
+      return <h3>{selectedDept} Police: {startDate} to {endDate}</h3>
     } else {
-      return <h3>All Stops, {startDate} to {endDate}</h3>
+      return <p/>
     }
   }
 
@@ -157,7 +148,8 @@ class App extends Component {
     return (
       <div className="ctdata-ctrp3-app">
         <div className="row">
-          <div className="col col-md-2">
+          <div className="col-sm-12">
+            <h2>Explore Stop Data by Departments</h2>
             <Department
               departments={window.departments}
               selectDept={this.updateSelectedDept}
@@ -167,13 +159,6 @@ class App extends Component {
               selectStartDate={this.updateStartDate}
               selectEndDate={this.updateEndDate}
             />
-            <Links
-              apiLinks={this.state.apiLinks}
-              updateAnalyses={this.updateSelectedAnalyses}
-            />
-          </div>
-          <div className="col-md-auto">
-            <h2>Explore Stop Data by Departments</h2>
             {this.infoHeader()}
             <Results
               apiData={this.state.apiData}

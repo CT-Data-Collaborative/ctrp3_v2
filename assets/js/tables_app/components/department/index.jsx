@@ -44,22 +44,25 @@ class Department extends React.Component {
 
     return (
       <div>
-        <h5>Department Type</h5>
-        <Select
-          name="department-type-select"
-          value={selectedDepartmentType}
-          options={deptTypes}
-          onChange={this.selectDepartmentType}
-        />
-      <h5>Department</h5>
-        <Select
-          name="department-select"
-          value={selectedDepartment}
-          options={departments}
-          onChange={this.selectDepartment}
-        />
+        <span className="ctdata-linked-selector ctdata-linked-selector__first">
+          <h5>Department Type</h5>
+          <Select
+            name="department-type-select"
+            value={selectedDepartmentType}
+            options={deptTypes}
+            onChange={this.selectDepartmentType}
+          />
+        </span>
+        <span className="ctdata-linked-selector">
+          <h5>Department</h5>
+          <Select
+            name="department-select"
+            value={selectedDepartment}
+            options={departments}
+            onChange={this.selectDepartment}
+          />
+        </span>
       </div>
-
     );
   }
 }

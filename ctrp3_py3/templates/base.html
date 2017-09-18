@@ -27,29 +27,9 @@
   </head>
 
   <body>
+    {% include 'partials/nav.html' %}
+    <div id="main">
 
-    <div class="m-b-1">
-      <nav class="navbar navbar-toggleable-md navbar-light bg-faded">
-        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <a class="navbar-brand" href="{% url 'home' %}">ctrp3-py3</a>
-
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-              <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'about' %}">About</a>
-            </li>
-          </ul>
-        </div>
-      </nav>
-
-    </div>
-
-    <div class="container-fluid">
 
       {% if messages %}
           {% for message in messages %}
@@ -61,9 +41,10 @@
         <p>Use this document as a way to quick start any new project.</p>
       {% endblock content %}
 
-    </div> <!-- /container -->
+    </div> <!-- /main -->
 
     {% block modal %}{% endblock modal %}
+    {% include 'partials/footer.html' %}
 
     <!-- Le javascript
     ================================================== -->

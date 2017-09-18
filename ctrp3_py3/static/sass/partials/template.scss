@@ -1,0 +1,21 @@
+* {
+  font: 16px $font1;
+  color: $extra-dark-grey;
+  h1,h2,h3,h4,h5 {
+    font-family: $font3;
+  }
+}
+
+html, body {
+  font-size: 16px !important;
+}
+
+#main {
+  //background: $extra-light-grey;
+  overflow-y: scroll;
+  height: calc(100vh - 6rem);
+}
+
+.ctdata-ctrp3-app {
+  width: 100%;
+}

@@ -24561,12 +24561,10 @@ __WEBPACK_IMPORTED_MODULE_1_react_dom___default.a.render(__WEBPACK_IMPORTED_MODU
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_department__ = __webpack_require__(531);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_timeperiod__ = __webpack_require__(540);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_links__ = __webpack_require__(541);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__components_results__ = __webpack_require__(543);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_results__ = __webpack_require__(543);
 /**
  * Created by scuerda on 7/20/17.
  */
-
 
 
 
@@ -24583,7 +24581,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
       endDate: window.months[window.months.length - 1],
       apiLinks: window.api_links,
       apiData: window.apiData,
-      selectedAnalyses: []
+      selectedAnalyses: Object.keys(window.apiData)
     };
 
     this.updateSelectedDept = this.updateSelectedDept.bind(this);
@@ -24591,7 +24589,6 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     this.updateEndDate = this.updateEndDate.bind(this);
     this.updateData = this.updateData.bind(this);
     this.getData = this.getData.bind(this);
-    this.updateSelectedAnalyses = this.updateSelectedAnalyses.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -24603,9 +24600,6 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
       this.getData(this.state.selectedDepartment, this.state.startDate, this.state.endDate, this.state.selectedAnalyses);
     }
     if (this.state.endDate != prevState.endDate) {
-      this.getData(this.state.selectedDepartment, this.state.startDate, this.state.endDate, this.state.selectedAnalyses);
-    }
-    if (this.state.selectedAnalyses != prevState.selectedAnalyses) {
       this.getData(this.state.selectedDepartment, this.state.startDate, this.state.endDate, this.state.selectedAnalyses);
     }
   }
@@ -24686,10 +24680,6 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     this.setState({ endDate: d });
   }
 
-  updateSelectedAnalyses(selectedAnalyses) {
-    this.setState({ selectedAnalyses });
-  }
-
   updateData(newData) {
     this.setState({ apiData: newData });
   }
@@ -24703,20 +24693,13 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
         'h3',
         null,
         selectedDept,
-        ', ',
+        ' Police: ',
         startDate,
         ' to ',
         endDate
       );
     } else {
-      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-        'h3',
-        null,
-        'All Stops, ',
-        startDate,
-        ' to ',
-        endDate
-      );
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('p', null);
     }
   }
 
@@ -24729,7 +24712,12 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
         { className: 'row' },
         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
           'div',
-          { className: 'col col-md-2' },
+          { className: 'col-sm-12' },
+          __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+            'h2',
+            null,
+            'Explore Stop Data by Departments'
+          ),
           __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1__components_department__["a" /* default */], {
             departments: window.departments,
             selectDept: this.updateSelectedDept
@@ -24739,21 +24727,8 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
             selectStartDate: this.updateStartDate,
             selectEndDate: this.updateEndDate
           }),
-          __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__components_links__["a" /* default */], {
-            apiLinks: this.state.apiLinks,
-            updateAnalyses: this.updateSelectedAnalyses
-          })
-        ),
-        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-          'div',
-          { className: 'col-md-auto' },
-          __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-            'h2',
-            null,
-            'Explore Stop Data by Departments'
-          ),
           this.infoHeader(),
-          __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_4__components_results__["a" /* default */], {
+          __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__components_results__["a" /* default */], {
             apiData: this.state.apiData
           })
         )
@@ -24821,27 +24796,35 @@ class Department extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component
       'div',
       null,
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-        'h5',
-        null,
-        'Department Type'
+        'span',
+        { className: 'ctdata-linked-selector ctdata-linked-selector__first' },
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'h5',
+          null,
+          'Department Type'
+        ),
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_react_select___default.a, {
+          name: 'department-type-select',
+          value: selectedDepartmentType,
+          options: deptTypes,
+          onChange: this.selectDepartmentType
+        })
       ),
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_react_select___default.a, {
-        name: 'department-type-select',
-        value: selectedDepartmentType,
-        options: deptTypes,
-        onChange: this.selectDepartmentType
-      }),
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-        'h5',
-        null,
-        'Department'
-      ),
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_react_select___default.a, {
-        name: 'department-select',
-        value: selectedDepartment,
-        options: departments,
-        onChange: this.selectDepartment
-      })
+        'span',
+        { className: 'ctdata-linked-selector' },
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'h5',
+          null,
+          'Department'
+        ),
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_react_select___default.a, {
+          name: 'department-select',
+          value: selectedDepartment,
+          options: departments,
+          onChange: this.selectDepartment
+        })
+      )
     );
   }
 }
@@ -26049,27 +26032,35 @@ class DateRange extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
       'div',
       null,
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-        'h5',
-        null,
-        'Start Month'
+        'span',
+        { className: 'ctdata-linked-selector ctdata-linked-selector__first' },
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'h5',
+          null,
+          'Start Month'
+        ),
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_react_select___default.a, {
+          name: 'start-month-select',
+          value: this.state.startMonth,
+          options: startMonths,
+          onChange: this.setStartMonth
+        })
       ),
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_react_select___default.a, {
-        name: 'start-month-select',
-        value: this.state.startMonth,
-        options: startMonths,
-        onChange: this.setStartMonth
-      }),
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-        'h5',
-        null,
-        'End Month'
-      ),
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_react_select___default.a, {
-        name: 'end-month-select',
-        value: this.state.endMonth,
-        options: endMonths,
-        onChange: this.setEndMonth
-      })
+        'span',
+        { className: 'ctdata-linked-selector' },
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'h5',
+          null,
+          'End Month'
+        ),
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_react_select___default.a, {
+          name: 'end-month-select',
+          value: this.state.endMonth,
+          options: endMonths,
+          onChange: this.setEndMonth
+        })
+      )
     );
   }
 }
@@ -26077,117 +26068,8 @@ class DateRange extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
 /* harmony default export */ __webpack_exports__["a"] = (DateRange);
 
 /***/ }),
-/* 541 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__checkbox__ = __webpack_require__(542);
-
-
-
-class Links extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      selectedCheckboxes: []
-    };
-    this.toggleCheckbox = this.toggleCheckbox.bind(this);
-  }
-
-  toggleCheckbox(label) {
-
-    const selectedCheckboxes = this.state.selectedCheckboxes.slice();
-    let pos = selectedCheckboxes.indexOf(label);
-    if (pos > -1) {
-      selectedCheckboxes.splice(pos, 1);
-    } else {
-      selectedCheckboxes.push(label);
-    }
-
-    this.setState({ selectedCheckboxes });
-    this.props.updateAnalyses(selectedCheckboxes);
-  }
-
-  createCheckbox(label) {
-    return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1__checkbox__["a" /* default */], {
-      label: label,
-      handleCheckboxChange: this.toggleCheckbox,
-      key: label
-    });
-  }
-
-  createCheckboxes() {
-    return Object.keys(this.props.apiLinks).map(l => this.createCheckbox(l));
-  }
-
-  render() {
-    return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-      'div',
-      null,
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-        'h5',
-        null,
-        'Select Data View'
-      ),
-      this.createCheckboxes()
-    );
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Links);
-
-/***/ }),
-/* 542 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
-
-
-class Checkbox extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isChecked: false
-    };
-    this.toggleCheckboxChange = this.toggleCheckboxChange.bind(this);
-  }
-
-  toggleCheckboxChange() {
-    const isChecked = this.state.isChecked;
-    this.setState({ isChecked: !isChecked });
-    this.props.handleCheckboxChange(this.props.label);
-  }
-
-  render() {
-    const { label } = this.props;
-    const { isChecked } = this.state;
-
-    return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-      "div",
-      { className: "checkbox" },
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-        "label",
-        null,
-        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("input", {
-          type: "checkbox",
-          value: label,
-          checked: isChecked,
-          onChange: this.toggleCheckboxChange
-        }),
-        " ",
-        label
-      )
-    );
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Checkbox);
-
-/***/ }),
+/* 541 */,
+/* 542 */,
 /* 543 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -26210,7 +26092,16 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 
   trafficStopTable(data) {
     if (this.state.display['Traffic Stops'] == true) {
-      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["g" /* buildStopTable */])(data['Traffic Stops']);
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-md' },
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'h4',
+          null,
+          'Traffic Stops'
+        ),
+        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["g" /* buildStopTable */])(data['Traffic Stops'])
+      );
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
     }
@@ -26218,7 +26109,16 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 
   stopEnforcementTable(data) {
     if (this.state.display['Stop Enforcement Method'] == true) {
-      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["f" /* buildStopEnforcementMethodTable */])(data['Stop Enforcement Method']);
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-md' },
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'h4',
+          null,
+          'Stop Enforcement Method'
+        ),
+        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["f" /* buildStopEnforcementMethodTable */])(data['Stop Enforcement Method'])
+      );
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
     }
@@ -26226,7 +26126,16 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 
   natureOfStopsTable(data) {
     if (this.state.display['Nature of the Traffic Stop'] == true) {
-      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["c" /* buildNatureOfStopTable */])(data['Nature of the Traffic Stop']);
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg' },
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'h4',
+          null,
+          'Nature of the Traffic Stop'
+        ),
+        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["c" /* buildNatureOfStopTable */])(data['Nature of the Traffic Stop'])
+      );
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
     }
@@ -26234,7 +26143,16 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 
   stopsByMonthTable(data) {
     if (this.state.display['Stops by Month'] == true) {
-      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["i" /* buildStopsByMonthTable */])(data['Stops by Month']);
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-sm' },
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'h4',
+          null,
+          'Stops by Month'
+        ),
+        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["i" /* buildStopsByMonthTable */])(data['Stops by Month'])
+      );
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
     }
@@ -26242,7 +26160,16 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 
   stopsByHourTable(data) {
     if (this.state.display['Stops by Hour'] == true) {
-      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["h" /* buildStopsByHourTable */])(data['Stops by Hour']);
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-sm' },
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'h4',
+          null,
+          'Stop by Hour'
+        ),
+        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["h" /* buildStopsByHourTable */])(data['Stops by Hour'])
+      );
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
     }
@@ -26250,7 +26177,16 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 
   ageOfDriverTable(data) {
     if (this.state.display['Age of the Driver'] == true) {
-      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["a" /* buildAgeOfDriverTable */])(data['Age of the Driver']);
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg' },
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'h4',
+          null,
+          'Age of the Driver'
+        ),
+        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["a" /* buildAgeOfDriverTable */])(data['Age of the Driver'])
+      );
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
     }
@@ -26258,7 +26194,16 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 
   dispositionTable(data) {
     if (this.state.display['Disposition of the Traffic Stop'] == true) {
-      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["b" /* buildDispositionTable */])(data['Disposition of the Traffic Stop']);
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg' },
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'h4',
+          null,
+          'Disposition of the Traffic Stop'
+        ),
+        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["b" /* buildDispositionTable */])(data['Disposition of the Traffic Stop'])
+      );
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
     }
@@ -26266,7 +26211,16 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 
   residencyTable(data) {
     if (this.state.display['Residency Information'] == true) {
-      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["d" /* buildResidencyTable */])(data['Residency Information']);
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-sm' },
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'h4',
+          null,
+          'Residency Information'
+        ),
+        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["d" /* buildResidencyTable */])(data['Residency Information'])
+      );
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
     }
@@ -26274,11 +26228,21 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
 
   searchInformationTable(data) {
     if (this.state.display['Search Information'] == true) {
-      return Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["e" /* buildSearchInformationTable */])(data['Search Information']);
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        { className: 'ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg' },
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'h4',
+          null,
+          'Search Information'
+        ),
+        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["e" /* buildSearchInformationTable */])(data['Search Information'])
+      );
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
     }
   }
+
   componentWillReceiveProps(nextProps) {
     let display = {};
 
@@ -26297,11 +26261,6 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
     return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
       'div',
       null,
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-        'h3',
-        null,
-        'Results'
-      ),
       this.trafficStopTable(this.props.apiData),
       this.stopEnforcementTable(this.props.apiData),
       this.natureOfStopsTable(this.props.apiData),
@@ -26346,23 +26305,49 @@ function makeTable(columns, data) {
     showPaginationBottom: false,
     showPageSizeOptions: false,
     showPagination: false,
-    defaultPageSize: data.length,
-    style: {
-      height: '400px' // This will force the table body to overflow and scroll, since there is not enough room
-    }
+    defaultPageSize: data.length
   });
+}
+
+function columnHelper(column_list) {
+  let columns = [{
+    Header: '',
+    accessor: 'race/ethnicity'
+  }];
+  column_list.forEach(column_name => {
+    let column = {
+      Header: column_name,
+      columns: [{
+        Header: 'Stops',
+        id: column_name + 'count',
+        accessor: d => d[column_name]['count'],
+        maxWidth: 200
+      }, {
+        Header: 'Percent',
+        id: column_name + 'percent',
+        accessor: d => d[column_name]['percent'],
+        maxWidth: 200
+      }]
+    };
+    columns.push(column);
+  });
+
+  return columns;
 }
 
 function buildStopTable(data) {
   const columns = [{
     Header: '',
-    accessor: 'race/ethnicity'
+    accessor: 'race/ethnicity',
+    maxWidth: 400
   }, {
     Header: 'Count',
-    accessor: 'count'
+    accessor: 'count',
+    maxWidth: 200
   }, {
     Header: 'Percent',
-    accessor: 'percent'
+    accessor: 'percent',
+    maxWidth: 200
   }];
 
   return makeTable(columns, data);
@@ -26579,30 +26564,6 @@ function buildDispositionTable(data) {
   }];
 
   return makeTable(columns, data);
-}
-
-function columnHelper(column_list) {
-  let columns = [{
-    Header: '',
-    accessor: 'race/ethnicity'
-  }];
-  column_list.forEach(column_name => {
-    let column = {
-      Header: column_name,
-      columns: [{
-        'Header': 'Stops',
-        'id': column_name + 'count',
-        'accessor': d => d[column_name]['count']
-      }, {
-        'Header': 'Percent',
-        'id': column_name + 'percent',
-        'accessor': d => d[column_name]['percent']
-      }]
-    };
-    columns.push(column);
-  });
-
-  return columns;
 }
 
 function buildSearchInformationTable(data) {

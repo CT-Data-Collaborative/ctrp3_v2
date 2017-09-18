@@ -1,0 +1,34 @@
+
+.image-container {
+    position: relative;
+    height:415px;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.image-container .after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: rgba(0, 0, 0, .45);
+    color: #FFF;
+}
+
+.hero-text {
+  position: relative;
+  text-align: center;
+  top: 125px;
+  font-size: 5rem;
+  color: $white;
+}
+
+
+@media screen and (max-width: 725px) {
+    .hero-text {
+      font-size: 2.5rem;
+    }
+}

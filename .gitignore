@@ -73,4 +73,4 @@ rawdata/
 
 .travis.yml
 
-./venv/
+venv/
