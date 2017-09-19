@@ -26360,6 +26360,23 @@ function makeTable(columns, data) {
   });
 }
 
+function percentCellHelper(value) {
+  if (+value == -999) {
+    return '-';
+  } else {
+    return value + '%';
+  }
+}
+
+function countCellHelper(value) {
+  if (+value == -999) {
+    return '-';
+  } else {
+    const intValue = +value;
+    return intValue.toLocaleString();
+  }
+}
+
 function columnHelper(column_list) {
   let columns = [{
     Header: '',
@@ -26371,11 +26388,22 @@ function columnHelper(column_list) {
       columns: [{
         Header: 'Stops',
         id: column_name + 'count',
-        accessor: d => d[column_name]['count']
+        accessor: d => d[column_name]['count'],
+        Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'div',
+          null,
+          countCellHelper(row.value)
+        )
       }, {
         Header: 'Percent',
         id: column_name + 'percent',
-        accessor: d => d[column_name]['percent']
+        accessor: d => d[column_name]['percent'],
+        Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'div',
+          null,
+          percentCellHelper(row.value),
+          'gss'
+        )
       }]
     };
     columns.push(column);
@@ -26393,7 +26421,14 @@ function simpleColumnHelper(column_list, first_column_accessor) {
     let column = {
       Header: column_name,
       id: column_name + 'percent',
-      accessor: d => d[column_name]['percent']
+      accessor: d => d[column_name]['percent'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        percentCellHelper(row.value),
+        '%'
+      )
+
     };
     columns.push(column);
   });
@@ -26407,10 +26442,20 @@ function buildStopTable(data) {
     minWidth: 300
   }, {
     Header: 'Count',
-    accessor: 'count'
+    accessor: 'count',
+    Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+      'div',
+      null,
+      countCellHelper(row.value)
+    )
   }, {
     Header: 'Percent',
-    accessor: 'percent'
+    accessor: 'percent',
+    Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+      'div',
+      null,
+      percentCellHelper(row.value)
+    )
   }];
 
   return makeTable(columns, data);
@@ -26423,10 +26468,20 @@ function buildStopEnforcementMethodTable(data) {
     minWidth: 200
   }, {
     Header: 'Count',
-    accessor: 'count'
+    accessor: 'count',
+    Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+      'div',
+      null,
+      countCellHelper(row.value)
+    )
   }, {
     Header: 'Percent',
-    accessor: 'percent'
+    accessor: 'percent',
+    Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+      'div',
+      null,
+      percentCellHelper(row.value)
+    )
   }];
 
   return makeTable(columns, data);
@@ -26438,7 +26493,12 @@ function buildStopsByHourTable(data) {
     accessor: 'hour'
   }, {
     Header: 'Stops',
-    accessor: 'count'
+    accessor: 'count',
+    Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+      'div',
+      null,
+      countCellHelper(row.value)
+    )
   }];
 
   return makeTable(columns, data);
@@ -26450,7 +26510,12 @@ function buildStopsByMonthTable(data) {
     accessor: 'month'
   }, {
     Header: 'Stops',
-    accessor: 'count'
+    accessor: 'count',
+    Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+      'div',
+      null,
+      countCellHelper(row.value)
+    )
   }];
 
   return makeTable(columns, data);
@@ -26462,10 +26527,20 @@ function buildResidencyTable(data) {
     accessor: 'column'
   }, {
     Header: 'Stops',
-    accessor: 'count'
+    accessor: 'count',
+    Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+      'div',
+      null,
+      countCellHelper(row.value)
+    )
   }, {
     Header: 'Percent',
-    accessor: 'percent'
+    accessor: 'percent',
+    Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+      'div',
+      null,
+      percentCellHelper(row.value)
+    )
   }];
 
   return makeTable(columns, data);
@@ -26480,33 +26555,63 @@ function buildNatureOfStopTable(data) {
     columns: [{
       'Header': 'Stops',
       'id': 'investigativeCount',
-      'accessor': d => d['Investigative']['count']
+      'accessor': d => d['Investigative']['count'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        countCellHelper(row.value)
+      )
     }, {
       'Header': 'Percent',
       'id': 'investigativePercent',
-      'accessor': d => d['Investigative']['percent']
+      'accessor': d => d['Investigative']['percent'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        percentCellHelper(row.value)
+      )
     }]
   }, {
     Header: 'Equipment',
     columns: [{
       'Header': 'Stops',
       'id': 'equipmentCount',
-      'accessor': d => d['Equipment']['count']
+      'accessor': d => d['Equipment']['count'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        countCellHelper(row.value)
+      )
     }, {
       'Header': 'Percent',
       'id': 'equipmentCount',
-      'accessor': d => d['Equipment']['percent']
+      'accessor': d => d['Equipment']['percent'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        percentCellHelper(row.value)
+      )
     }]
   }, {
     Header: 'Motor Vehicle',
     columns: [{
       'Header': 'Stops',
       'id': 'mvCount',
-      'accessor': d => d['Motor Vehicle']['count']
+      'accessor': d => d['Motor Vehicle']['count'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        countCellHelper(row.value)
+      )
     }, {
       'Header': 'Percent',
       'id': 'mvPercent',
-      'accessor': d => d['Motor Vehicle']['percent']
+      'accessor': d => d['Motor Vehicle']['percent'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        percentCellHelper(row.value)
+      )
     }]
   }];
 
@@ -26522,44 +26627,84 @@ function buildAgeOfDriverTable(data) {
     columns: [{
       'Header': 'Stops',
       'id': 'count16',
-      'accessor': d => d['16 to 25']['count']
+      'accessor': d => d['16 to 25']['count'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        countCellHelper(row.value)
+      )
     }, {
       'Header': 'Percent',
       'id': 'percent16',
-      'accessor': d => d['16 to 25']['percent']
+      'accessor': d => d['16 to 25']['percent'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        percentCellHelper(row.value)
+      )
     }]
   }, {
     Header: '25 to 40',
     columns: [{
       'Header': 'Stops',
       'id': 'count25',
-      'accessor': d => d['25 to 40']['count']
+      'accessor': d => d['25 to 40']['count'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        countCellHelper(row.value)
+      )
     }, {
       'Header': 'Stops',
       'id': 'percent25',
-      'accessor': d => d['25 to 40']['percent']
+      'accessor': d => d['25 to 40']['percent'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        percentCellHelper(row.value)
+      )
     }]
   }, {
     Header: '40 to 60',
     columns: [{
       'Header': 'Stops',
       'id': 'count40',
-      'accessor': d => d['40 to 60']['count']
+      'accessor': d => d['40 to 60']['count'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        countCellHelper(row.value)
+      )
     }, {
       'Header': 'Stops',
       'id': 'percent40',
-      'accessor': d => d['40 to 60']['percent']
+      'accessor': d => d['40 to 60']['percent'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        percentCellHelper(row.value)
+      )
     }]
   }, {
     Header: '60+',
     columns: [{
       'Header': 'Stops',
       'id': 'count60',
-      'accessor': d => d['60+']['count']
+      'accessor': d => d['60+']['count'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        countCellHelper(row.value)
+      )
     }, {
       'Header': 'Stops',
       'id': 'percent60',
-      'accessor': d => d['60+']['percent']
+      'accessor': d => d['60+']['percent'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        percentCellHelper(row.value)
+      )
     }]
   }];
 
@@ -26575,55 +26720,105 @@ function buildDispositionTable(data) {
     columns: [{
       'Header': 'Stops',
       'id': 'countUAR',
-      'accessor': d => d['UAR']['count']
+      'accessor': d => d['UAR']['count'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        countCellHelper(row.value)
+      )
     }, {
       'Header': 'Percent',
       'id': 'percentUAR',
-      'accessor': d => d['UAR']['percent']
+      'accessor': d => d['UAR']['percent'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        percentCellHelper(row.value)
+      )
     }]
   }, {
     Header: 'Mis. Summons',
     columns: [{
       'Header': 'Stops',
       'id': 'countSum',
-      'accessor': d => d['Mis. Summons']['count']
+      'accessor': d => d['Mis. Summons']['count'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        countCellHelper(row.value)
+      )
     }, {
       'Header': 'Percent',
       'id': 'percentSum',
-      'accessor': d => d['Mis. Summons']['percent']
+      'accessor': d => d['Mis. Summons']['percent'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        percentCellHelper(row.value)
+      )
     }]
   }, {
     Header: 'Infraction',
     columns: [{
       'Header': 'Stops',
       'id': 'countInf',
-      'accessor': d => d['Infraction']['count']
+      'accessor': d => d['Infraction']['count'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        countCellHelper(row.value)
+      )
     }, {
       'Header': 'Percent',
       'id': 'percentInf',
-      'accessor': d => d['Infraction']['percent']
+      'accessor': d => d['Infraction']['percent'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        percentCellHelper(row.value)
+      )
     }]
   }, {
     Header: 'Written Warning',
     columns: [{
       'Header': 'Stops',
       'id': 'countWarn',
-      'accessor': d => d['Written Warning']['count']
+      'accessor': d => d['Written Warning']['count'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        countCellHelper(row.value)
+      )
     }, {
       'Header': 'Percent',
       'id': 'percentWarn',
-      'accessor': d => d['Written Warning']['percent']
+      'accessor': d => d['Written Warning']['percent'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        percentCellHelper(row.value)
+      )
     }]
   }, {
     Header: 'Verbal Warning',
     columns: [{
       'Header': 'Stops',
       'id': 'countVWarn',
-      'accessor': d => d['Verbal Warning']['count']
+      'accessor': d => d['Verbal Warning']['count'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        countCellHelper(row.value)
+      )
     }, {
       'Header': 'Percent',
       'id': 'percentVWarn',
-      'accessor': d => d['Verbal Warning']['percent']
+      'accessor': d => d['Verbal Warning']['percent'],
+      Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        percentCellHelper(row.value)
+      )
     }]
   }];
 

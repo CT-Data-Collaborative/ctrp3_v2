@@ -34,19 +34,21 @@
 }
 
 .ctdata-ctrp3-results-table-md {
-  width: 60%;
+  //width: 60%;
+  width: 100%;
 }
 
 .ctdata-ctrp3-results-table-sm {
-  width: 40%;
+  //width: 40%;
+  width: 100%;
 }
 
 .ctdata-ctrp3-results-table-lg {
   width: 100%;
 }
 
-@media (max-width: 1000px) {
-  .ctdata-ctrp3-results-table-lg, .ctdata-ctrp3-results-table-md, .ctdata-ctrp3-results-table-sm {
-    width: 100%;
-  }
-}
+//@media (max-width: 1000px) {
+//  .ctdata-ctrp3-results-table-lg, .ctdata-ctrp3-results-table-md, .ctdata-ctrp3-results-table-sm {
+//    width: 100%;
+//  }
+//}
