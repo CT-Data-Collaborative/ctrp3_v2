@@ -12,7 +12,12 @@
 
 {% block javascript %}
     {{ super }}
+    <script src="https://use.fontawesome.com/aa95c6a447.js"></script>
     <script>
+{#        window.selected_department_type = 'Municipal';#}
+        {% if selected_department %}
+            window.selected_department = '{{ selected_department|safe }}';
+        {% endif %}
         window.departments = {{ departments|safe }};
         window.start_date = '{{ start_date }}';
         window.end_date = '{{ end_date }}';
@@ -24,8 +29,9 @@
 {% endblock %}
 
 {% block content %}
+    {% include 'partials/subnav.html' %}
     <div class="container-fluid">
-        <div class="col-sm-12 col-xl-10 offset-xl-1">
+        <div class="col-sm-12">
             <div style="width: 100%" id="root"></div>
         </div>
         <!-- /.col-sm-12 col-md-10 col-md-offset-1 -->

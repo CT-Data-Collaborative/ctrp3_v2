@@ -1,6 +1,6 @@
 @import url(https://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700);
 @import url(https://fonts.googleapis.com/css?family=Roboto:400,500,700);
-@import url(https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Trocchi:400,700);
+@import url(https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Trocchi:400);
 .alert-debug {
   background-color: #fff;
   border-color: #d6e9c6;
@@ -65,7 +65,39 @@ html, body {
   height: calc(100vh - 6rem); }
 
 .ctdata-ctrp3-app {
-  width: 100%; }
+  width: 100%;
+  padding-top: 32px;
+  padding-top: 2rem; }
+
+.ctdata-ctrp3-homepage-banner-row {
+  padding-top: 64px;
+  padding-top: 4rem;
+  padding-bottom: 64px;
+  padding-bottom: 4rem;
+  background-color: whitesmoke; }
+  .ctdata-ctrp3-homepage-banner-row p {
+    padding-top: 16px;
+    padding-top: 1rem;
+    max-width: 75%;
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-size: 1.25rem;
+    font-weight: 300; }
+    .ctdata-ctrp3-homepage-banner-row p a {
+      font-size: 20px;
+      font-size: 1.25rem;
+      font-weight: 300;
+      text-decoration: underline;
+      color: #4A4A4A; }
+    .ctdata-ctrp3-homepage-banner-row p a:hover {
+      text-decoration: none;
+      color: #4A4A4A; }
+
+.ctdata-ctrp3-homepage-row {
+  padding-top: 48px;
+  padding-top: 3rem;
+  padding-bottom: 48px;
+  padding-bottom: 3rem; }
 
 .ctdata-navbar {
   height: 48px;
@@ -207,13 +239,34 @@ html, body {
   .link-list__item--button {
     display: block; } }
 
-.ctdata-linked-selector {
-  width: 50%;
-  float: left; }
+.ctdata-ctrp3-selector {
+  padding-top: 16px;
+  padding-top: 1rem;
+  padding-bottom: 8px;
+  padding-bottom: .5rem; }
 
-.ctdata-linked-selector__first {
-  padding-right: 16px;
-  padding-right: 1rem; }
+.ctdata-ctrp3-date-selector-joiner {
+  margin-top: 10.4px;
+  margin-top: .65rem;
+  font-size: 20px;
+  font-size: 1.25rem;
+  text-align: center; }
+
+.ctdata-ctrp3-controls {
+  border-right: 1px solid #4A4A4A;
+  min-height: 75vh; }
+
+.ctdata-ctrp3-results {
+  padding-left: 32px;
+  padding-left: 2rem;
+  padding-right: 32px;
+  padding-right: 2rem; }
+
+.ctdata-ctrp3-results-info {
+  padding-top: 16px;
+  padding-top: 1rem;
+  padding-left: 32px;
+  padding-left: 2rem; }
 
 .ctdata-ctrp3-results-table {
   padding-top: 16px;
@@ -223,12 +276,14 @@ html, body {
   clear: both; }
 
 .rt-thead {
-  background-color: #63D1F4;
-  color: #4a4a4a; }
+  background-color: #284152;
+  color: #ececec; }
   .rt-thead .rt-tr {
     text-align: right !important;
-    background-color: #63D1F4;
-    color: #4a4a4a; }
+    background-color: #284152;
+    color: #ececec; }
+    .rt-thead .rt-tr .rt-th, .rt-thead .rt-tr .rt-resizable-header-content {
+      color: #ececec; }
     .rt-thead .rt-tr .rt-resizable-header:first-of-type .rt-resizable-header-content {
       text-align: left !important; }
 
@@ -246,3 +301,59 @@ html, body {
 
 .ctdata-ctrp3-results-table-lg {
   width: 100%; }
+
+.breadcrumbs {
+  padding-top: 8px;
+  padding-top: .5rem;
+  padding-bottom: 16px;
+  padding-bottom: 1rem; }
+
+.ctdata-ctrp3-subnav {
+  background-color: #284152;
+  padding: 16px;
+  padding: 1rem; }
+  .ctdata-ctrp3-subnav a.nav-link {
+    color: whitesmoke !important;
+    font-size: 20px !important;
+    font-size: 1.25rem !important;
+    font-weight: 200; }
+  .ctdata-ctrp3-subnav .nav-item.active a.nav-link {
+    border-bottom: 3px solid #63D1F4; }
+
+.ctdata-ctrp3-subnav-section.navbar-brand {
+  padding-left: 32px;
+  padding-left: 2rem; }
+
+.ctdata-ctrp3-subnav-section .navbar-nav {
+  padding-right: 48px;
+  padding-right: 3rem;
+  padding-top: 16px;
+  padding-top: 1rem; }
+
+.ctdata-ctrp3-subnav-subtitle {
+  font-family: "Roboto Condensed", sans-serif;
+  color: whitesmoke;
+  font-weight: 200; }
+
+.ctdata-ctp3-subnav-title {
+  font-family: "Trocchi", serif;
+  color: whitesmoke;
+  font-size: 32px;
+  font-size: 2rem; }
+
+@media (max-width: 900px) {
+  .ctdata-ctp3-subnav-title {
+    font-size: 1rem; } }
+
+@media (max-width: 500px) {
+  .ctdata-ctrp3-subnav-subtitle {
+    font-size: .7rem; }
+  .ctdata-ctp3-subnav-title {
+    font-size: .75rem; } }
+
+.ctdata-ctrp3-homepage-controls {
+  padding-top: 32px;
+  padding-top: 2rem; }
+  .ctdata-ctrp3-homepage-controls h1, .ctdata-ctrp3-homepage-controls h2, .ctdata-ctrp3-homepage-controls h3, .ctdata-ctrp3-homepage-controls h3 {
+    padding-bottom: 16px;
+    padding-bottom: 1rem; }

@@ -29,6 +29,7 @@ module.exports = {
   entry: {
         vendor: VENDOR,
         tables: './assets/js/tables',
+        home: './assets/js/home'
     },
 
   output: {

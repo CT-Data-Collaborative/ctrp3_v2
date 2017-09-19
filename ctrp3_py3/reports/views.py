@@ -23,6 +23,9 @@ class JSONResponse(HttpResponse):
 
 
 def report_tables(request):
+    """View for tables page. Can also be initiated with data if the user comes to page from homepage
+
+    """
     department_by_type = Department.objects.grouped_types()
     start_date = settings.DATA_START_DATE
     end_date = settings.DATA_END_DATE
@@ -31,6 +34,7 @@ def report_tables(request):
     api_data = OrderedDict()
     for l, u in api_links.items():
         api_data[l] = []
+
     context = {
         'departments': json.dumps(department_by_type),
         'start_date': start_date.iso8601(),
@@ -39,6 +43,26 @@ def report_tables(request):
         'api_links': json.dumps(api_links),
         'api_data': json.dumps(api_data)
     }
+    # Probably a ogod idea to consider refactoring this in to a form for proper validation
+    if request.method == 'POST':
+        try:
+            found_dept = Department.objects.get(department_name=request.POST.get('department'))
+        except Department.DoesNotExist:
+            pass
+
+        if found_dept:
+            context['selected_department'] = found_dept.department_name
+
+        submitted_start_date = request.POST.get('start_date', None)
+
+        if submitted_start_date and submitted_start_date in month_list:
+            context['start_date'] = submitted_start_date
+
+        submitted_end_date = request.POST.get('end_date', None)
+
+        if submitted_end_date and submitted_end_date in month_list:
+            context['end_date'] = submitted_end_date
+
     return render(request, 'reports/tables.html', context)
 
 def scatter_plots(request):

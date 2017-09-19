@@ -175,7 +175,7 @@ class Results extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className="ctdata-ctrp3-results">
         {this.trafficStopTable(this.props.apiData)}
         {this.stopEnforcementTable(this.props.apiData)}
         {this.natureOfStopsTable(this.props.apiData)}

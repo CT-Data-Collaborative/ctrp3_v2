@@ -70,9 +70,9 @@ class MarkdownModel(models.Model):
     class Meta:
         abstract = True
 
-    def __getattr__(self, item):
-        base_item_name, cmd = item.split('__')
-        if cmd == 'markdownify' and type(self._meta.get_field(base_item_name)) == MarkdownxField:
-            return markdownify(self._meta.get_field(base_item_name).value_from_object(self))
-        else:
-            return models.Model.__getattribute__(self, item)
+    # def __getattr__(self, item):
+    #     base_item_name, cmd = item.split('__')
+    #     if cmd == 'markdownify' and type(self._meta.get_field(base_item_name)) == MarkdownxField:
+    #         return markdownify(self._meta.get_field(base_item_name).value_from_object(self))
+    #     else:
+    #         return models.Model.__getattribute__(self, item)

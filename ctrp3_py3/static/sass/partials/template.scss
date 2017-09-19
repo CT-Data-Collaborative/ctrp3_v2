@@ -18,4 +18,36 @@ html, body {
 
 .ctdata-ctrp3-app {
   width: 100%;
+  padding-top: 2rem;
+}
+
+.ctdata-ctrp3-homepage-banner-row {
+  padding-top:4rem;
+  padding-bottom:4rem;
+  background-color: whitesmoke;
+
+  p {
+    padding-top: 1rem;
+    max-width: 75%;
+    font-family: $font1;
+    font-size: 1.25rem;
+    font-weight: 300;
+
+    a {
+      font-size: 1.25rem;
+      font-weight: 300;
+      text-decoration: underline;
+      color: $extra-dark-grey;
+    }
+    a:hover {
+      text-decoration: none;
+      color: $extra-dark-grey;;
+    }
+  }
+}
+
+
+.ctdata-ctrp3-homepage-row {
+  padding-top:3rem;
+  padding-bottom:3rem;
 }

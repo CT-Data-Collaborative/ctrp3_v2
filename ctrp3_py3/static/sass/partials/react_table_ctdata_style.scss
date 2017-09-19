@@ -1,3 +1,18 @@
+.ctdata-ctrp3-controls {
+  border-right: 1px solid $extra-dark-grey;
+  min-height: 75vh;
+}
+
+.ctdata-ctrp3-results {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.ctdata-ctrp3-results-info {
+  padding-top: 1rem;
+  padding-left: 2rem;
+}
+
 .ctdata-ctrp3-results-table {
   padding-top: 1rem;
   margin: 1rem 0;
@@ -5,14 +20,17 @@
 }
 
 .rt-thead {
-  background-color: $ctdata-medium-blue;
-  color: #4a4a4a;
+  background-color: $ctdata-super-dark-blue;
+  color: $extra-light-grey;
 
   .rt-tr {
     text-align: right !important;
-    background-color: $ctdata-medium-blue;
-    color: #4a4a4a;
+    background-color: $ctdata-super-dark-blue;
+    color: $extra-light-grey;
 
+    .rt-th,.rt-resizable-header-content {
+      color: $extra-light-grey;
+    }
     .rt-resizable-header:first-of-type {
       .rt-resizable-header-content {
         text-align: left !important;

@@ -1,37 +1,40 @@
 {% extends "base.html" %}
 {% load staticfiles i18n %}
+{% load render_bundle from webpack_loader %}
+
+{% block css %}
+    {{ block.super }}
+     <link rel="stylesheet" href="https://unpkg.com/react-select/dist/react-select.css">
+{% endblock %}
+
 {% block content %}
-<div class="row">
-	<div class="gallerytitle">
-		<h2>Changing the way Connecticut uses data</h2>
-		<p>This site provides access to raw traffic stop data and tables
-		for each police district in the state for stops conducted between
-		October 1st, 2013 and September 30, 2015. New data will be posted
-		as it is released.</p>
-		<a href="/reports/tables/">
-			<i class="button-warning">Explore data tables»</i>
-		</a>
-	</div>
-</div>
-<div class="row offset">
-	<div class="col-sm-1"></div>
-	<div class="col-sm-6">
-		<div class="introduction">
-			{{ about|safe}}
-			<span>
-				<a href="/about/">
-					<i class="button-large">Get more information »</i>
-				</a>
-			</span>
-		</div>
-	</div>
-	<div class="col-sm-4">
-		<div>
-			<h3>News</h3>
-			<ul>
-			</ul>
-		</div>
-	</div>
-	<div class="col-sm-1"></div>
-</div>
+    {% include 'partials/subnav.html' %}
+    <div class="container-fluid">
+        <div class="row ctdata-ctrp3-homepage-banner-row">
+            <div class="col-md-6 offset-md-3">
+                {% csrf_token %}
+                <h1>Changing the way Connecticut uses data</h1>
+                <hr/>
+                <p>The Racial Profiling Project Data Explorer provides access to <a href="">raw</a> and <a href="{% url 'reports:tables' %}">interactive</a> traffic stop data
+                    for each police district in the state for stops conducted between {{ start|date:"M d, Y" }} and {{ end|date:"M d, Y" }}.</p>
+            </div>
+            <!-- /.col-md-8 -->
+        </div>
+        <div id="root" />
+        <!-- /.row -->
+    </div>
+{% endblock %}
+
+
+
+{% block javascript %}
+    {{ super }}
+    <script>
+        window.departments = {{ departments|safe }};
+        window.start_date = '{{ start_date }}';
+        window.end_date = '{{ end_date }}';
+        window.months = {{ month_list|safe }};
+        window.CSRF_TOKEN = '{{ csrf_token }}';
+    </script>
+    {% render_bundle 'home' %}
 {% endblock %}

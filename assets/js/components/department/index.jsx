@@ -9,10 +9,11 @@ class Department extends React.Component {
       department_options: props.departments['Municipal'],
       department_types: ['Municipal', 'State Police', 'Special'],
       selected_department_type: 'Municipal',
-      selected_department: null,
+      selected_department: props.selectedDepartment ? props.selectedDepartment : null,
     };
     this.selectDepartmentType = this.selectDepartmentType.bind(this);
     this.selectDepartment = this.selectDepartment.bind(this);
+    this.layout = this.layout.bind(this);
   }
 
   selectDepartmentType(val) {
@@ -30,7 +31,7 @@ class Department extends React.Component {
     this.setState({ selected_department: val.value });
   }
 
-  render() {
+  layout(width) {
     const deptTypes = this.state.department_types.map((d) => {
       return { value: d, label: d };
     });
@@ -42,28 +43,57 @@ class Department extends React.Component {
       return { value: d.name, label: d.name }
     });
 
-    return (
-      <div>
-        <span className="ctdata-linked-selector ctdata-linked-selector__first">
-          <h5>Department Type</h5>
+    if (width == 'full') {
+      return (
+        <div className="col-sm-12">
+            <h4>Location</h4>
+            <hr/>
+            <p>Department Type</p>
+            <Select
+              name="department-type-select"
+              value={selectedDepartmentType}
+              options={deptTypes}
+              onChange={this.selectDepartmentType}
+            />
+            <p>Department</p>
+            <Select
+              name="department-select"
+              value={selectedDepartment}
+              options={departments}
+              onChange={this.selectDepartment}
+            />
+        </div>
+      )
+    } else {
+      return (
+        <div className="row">
+        <div className="col-md-12 ctdata-ctrp3-selector">
+          <h4>Location</h4>
+          <hr/>
+          <p>Department Type</p>
           <Select
             name="department-type-select"
             value={selectedDepartmentType}
             options={deptTypes}
             onChange={this.selectDepartmentType}
           />
-        </span>
-        <span className="ctdata-linked-selector">
-          <h5>Department</h5>
+        </div>
+        <div className="col-md-12 ctdata-ctrp3-selector">
+          <p>Department</p>
           <Select
             name="department-select"
             value={selectedDepartment}
             options={departments}
             onChange={this.selectDepartment}
           />
-        </span>
+        </div>
       </div>
-    );
+      )
+    }
+  }
+
+  render() {
+    return (this.layout(this.props.width));
   }
 }
 

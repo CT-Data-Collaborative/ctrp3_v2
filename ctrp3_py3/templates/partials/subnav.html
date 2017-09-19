@@ -1,0 +1,24 @@
+<nav class="navbar navbar-toggleable-md navbar-light ctdata-ctrp3-subnav">
+    <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+            aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="ctdata-ctrp3-subnav-section navbar-brand">
+        <div class="ctdata-ctrp3-subnav-subtitle">Connecticut Data Collaborative</div>
+        <div class="ctdata-ctp3-subnav-title">Racial Profiling Prohibition Project Data Explorer</div>
+    </div>
+    <div class="ctdata-ctrp3-subnav-section collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="mr-auto"></div>
+        <!-- /.mr-auto -->
+        <ul class="navbar-nav">
+            {% url 'home' as home_url %}
+            {% url 'reports:tables' as tables_url %}
+            {% url 'about' as about_url %}
+            <li class="nav-item {% if request.path == home_url %}active{% endif %}"><a class="nav-link" href="{{ home_url }}">Home</a></li>
+            <li class="nav-item {% if request.path == tables_url %}active{% endif %}"><a class="nav-link" href="{{ tables_url }}">Explorer</a></li>
+            <li class="nav-item"><a class="nav-link" href="">Raw Data</a></li>
+            <li class="nav-item {% if request.path == about_url %}active{% endif %}"><a class="nav-link" href="{{ about_url }}">About</a></li>
+        </ul>
+    </div>
+</nav>
