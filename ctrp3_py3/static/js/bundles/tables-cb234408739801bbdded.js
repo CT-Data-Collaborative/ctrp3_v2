@@ -23333,8 +23333,9 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
 
     this.state = {
       selectedDepartment: window.selected_department ? window.selected_department : null,
-      startDate: window.start_date ? window.start_date : window.months[0],
-      endDate: window.end_date ? window.end_date : window.months[window.months.length - 1],
+      selectedDepartmentType: window.selected_department_type ? window.selected_department_type : 'Municipal',
+      startDate: window.start_date,
+      endDate: window.end_date,
       apiLinks: window.api_links,
       apiData: window.apiData,
       selectedAnalyses: Object.keys(window.apiData)
@@ -23485,6 +23486,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
           { className: 'col-sm-12 col-xl-3 ctdata-ctrp3-controls' },
           __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1__components_department__["a" /* default */], {
             selectedDepartment: this.state.selectedDepartment,
+            selectedDepartmentType: this.state.selectedDepartmentType,
             departments: window.departments,
             selectDept: this.updateSelectedDept
           }),
@@ -25239,9 +25241,9 @@ class Department extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component
     super(props);
     this.state = {
       departments: props.departments,
-      department_options: props.departments['Municipal'],
+      department_options: props.departments[props.selectedDepartmentType],
       department_types: ['Municipal', 'State Police', 'Special'],
-      selected_department_type: 'Municipal',
+      selected_department_type: props.selectedDepartmentType,
       selected_department: props.selectedDepartment ? props.selectedDepartment : null
     };
     this.selectDepartmentType = this.selectDepartmentType.bind(this);
@@ -25269,7 +25271,7 @@ class Department extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component
       return { value: d, label: d };
     });
 
-    const selectedDepartmentType = this.state.selected_department_type ? this.state.selected_department_type : '';
+    const selectedDepartmentType = this.state.selected_department_type ? this.state.selected_department_type : 'Municipal';
     const selectedDepartment = this.state.selected_department;
 
     const departments = this.state.department_options.map(d => {
@@ -26530,8 +26532,8 @@ class DateRange extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component 
     super(props);
     this.state = {
       months: props.months,
-      startMonth: props.months[0],
-      endMonth: props.months[props.months.length - 1]
+      startMonth: props.selectedStartDate,
+      endMonth: props.selectedEndDate
     };
     this.setStartMonth = this.setStartMonth.bind(this);
     this.setEndMonth = this.setEndMonth.bind(this);
@@ -26988,8 +26990,7 @@ function columnHelper(column_list) {
         Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
           'div',
           null,
-          percentCellHelper(row.value),
-          'gss'
+          percentCellHelper(row.value)
         )
       }]
     };
@@ -27012,8 +27013,7 @@ function simpleColumnHelper(column_list, first_column_accessor) {
       Cell: row => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'div',
         null,
-        percentCellHelper(row.value),
-        '%'
+        percentCellHelper(row.value)
       )
 
     };

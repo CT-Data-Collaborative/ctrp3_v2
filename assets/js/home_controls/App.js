@@ -40,8 +40,8 @@ class App extends Component {
           <div className="row ctdata-ctrp3-homepage-controls">
             <h3 className="ctdata-ctrp3-homepage-controls--header" >Explore by department and time period</h3>
             <Department departments={window.departments} selectDept={this.updateSelectedDept} width={'full'}/>
-            <DateRange months={window.months} selectStartDate={this.updateStartDate}
-                       selectEndDate={this.updateEndDate} width={'full'}/>
+            <DateRange months={window.months} selectStartDate={this.updateStartDate} selectedStartDate={this.state.startDate}
+                       selectEndDate={this.updateEndDate} selectedEndDate={this.state.endDate} width={'full'}/>
 
             <form action="/reports/tables/" method="post">
               <input type="hidden" name="csrfmiddlewaretoken" value={this.state.csrf}/>

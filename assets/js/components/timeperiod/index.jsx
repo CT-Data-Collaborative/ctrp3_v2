@@ -6,8 +6,8 @@ class DateRange extends React.Component {
     super(props);
     this.state = {
       months: props.months,
-      startMonth: props.months[0],
-      endMonth: props.months[props.months.length - 1]
+      startMonth: props.selectedStartDate,
+      endMonth: props.selectedEndDate
     };
     this.setStartMonth = this.setStartMonth.bind(this);
     this.setEndMonth = this.setEndMonth.bind(this);

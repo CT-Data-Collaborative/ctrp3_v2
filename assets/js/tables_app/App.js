@@ -13,8 +13,9 @@ class App extends Component {
 
     this.state = {
       selectedDepartment: window.selected_department ? window.selected_department : null,
-      startDate: window.start_date ? window.start_date : window.months[0],
-      endDate: window.end_date ? window.end_date : window.months[window.months.length - 1],
+      selectedDepartmentType: window.selected_department_type ? window.selected_department_type : 'Municipal',
+      startDate: window.start_date,
+      endDate: window.end_date,
       apiLinks: window.api_links,
       apiData: window.apiData,
       selectedAnalyses: Object.keys(window.apiData)
@@ -157,6 +158,7 @@ class App extends Component {
           <div className="col-sm-12 col-xl-3 ctdata-ctrp3-controls">
             <Department
               selectedDepartment={this.state.selectedDepartment}
+              selectedDepartmentType={this.state.selectedDepartmentType}
               departments={window.departments}
               selectDept={this.updateSelectedDept}
             />

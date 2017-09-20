@@ -6,9 +6,9 @@ class Department extends React.Component {
     super(props);
     this.state = {
       departments: props.departments,
-      department_options: props.departments['Municipal'],
+      department_options: props.departments[props.selectedDepartmentType],
       department_types: ['Municipal', 'State Police', 'Special'],
-      selected_department_type: 'Municipal',
+      selected_department_type: props.selectedDepartmentType,
       selected_department: props.selectedDepartment ? props.selectedDepartment : null,
     };
     this.selectDepartmentType = this.selectDepartmentType.bind(this);
@@ -36,7 +36,7 @@ class Department extends React.Component {
       return { value: d, label: d };
     });
 
-    const selectedDepartmentType = this.state.selected_department_type ? this.state.selected_department_type : '';
+    const selectedDepartmentType = this.state.selected_department_type ? this.state.selected_department_type : 'Municipal';
     const selectedDepartment = this.state.selected_department;
 
     const departments = this.state.department_options.map((d) => {

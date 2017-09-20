@@ -50,7 +50,7 @@ function columnHelper(column_list) {
         id: column_name + 'percent',
         accessor: d => d[column_name]['percent'],
         Cell: row => (
-          <div>{percentCellHelper(row.value)}gss</div>
+          <div>{percentCellHelper(row.value)}</div>
         )
       }]
     }
@@ -71,7 +71,7 @@ function simpleColumnHelper(column_list, first_column_accessor) {
       id: column_name + 'percent',
       accessor: d => d[column_name]['percent'],
       Cell: row => (
-        <div>{percentCellHelper(row.value)}%</div>
+        <div>{percentCellHelper(row.value)}</div>
       )
 
     };

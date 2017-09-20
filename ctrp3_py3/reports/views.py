@@ -37,8 +37,8 @@ def report_tables(request):
 
     context = {
         'departments': json.dumps(department_by_type),
-        'start_date': start_date.iso8601(),
-        'end_date': end_date.iso8601(),
+        'start_date': month_list[0],
+        'end_date': month_list[-1],
         'month_list': json.dumps(month_list),
         'api_links': json.dumps(api_links),
         'api_data': json.dumps(api_data)
@@ -52,6 +52,7 @@ def report_tables(request):
 
         if found_dept:
             context['selected_department'] = found_dept.department_name
+            context['selected_department_type'] = found_dept.get_department_type_display()
 
         submitted_start_date = request.POST.get('start_date', None)
 

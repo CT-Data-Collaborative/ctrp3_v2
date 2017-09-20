@@ -18,6 +18,9 @@
         {% if selected_department %}
             window.selected_department = '{{ selected_department|safe }}';
         {% endif %}
+        {% if selected_department_type %}
+            window.selected_department_type = '{{ selected_department_type|safe }}';
+        {% endif %}
         window.departments = {{ departments|safe }};
         window.start_date = '{{ start_date }}';
         window.end_date = '{{ end_date }}';
