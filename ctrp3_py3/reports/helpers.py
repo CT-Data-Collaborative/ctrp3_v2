@@ -236,10 +236,13 @@ def qb(**kwargs):
     elif end_date:
         q_object_list.append(Q(intervention_datetime__lte=end_date))
 
+
+
     try:
         q_object_list.append(Q(org__department_id__department_name=kwargs['department'][0]))
     except KeyError:
         pass
+
     return q_object_list
 
 # Take, as parameters, keys of interest
@@ -263,6 +266,39 @@ def new_find_missing(key1, key2, list1, list2, data):
     list_to_check = [(i[key1],i[key2]) for i in data]
     return diff(prod, list_to_check)
 
+
+def state_and_department(func, **kwargs):
+    def inner(self, **kwargs):
+        cache_key = f'{func.__name__}__{slug_kwargs(kwargs)}'
+        final_results = redis_cache.get(cache_key)
+        if final_results:
+            return final_results
+
+        query_parameters = qb(**kwargs)
+
+        department_results = func(self, query_parameters)
+
+        # Get state values
+        try:
+            kwargs.pop('department')
+        except Exception:
+            raise Exception
+
+        state_cache_key = f'{func.__name__}__ct__{slug_kwargs(kwargs)}'
+        state_results = redis_cache.get(state_cache_key)
+
+        if not state_results:
+            state_query_parameters = qb(**kwargs)
+            state_results = func(self, state_query_parameters)
+            redis_cache.set(state_cache_key, state_results)
+
+        final_results = [{'state': state_results, 'dept': department_results}]
+
+        redis_cache.set(cache_key, final_results)
+
+        return final_results
+    return inner
+
 class DepartmentQueryset(models.QuerySet):
     def types(self):
         qs = self.all()
@@ -284,92 +320,93 @@ class DepartmentQueryset(models.QuerySet):
 class StopsQueryset(models.QuerySet):
 
     # TODOS Refactor traffic_stops, stop_enforcement to use new query structure
-    def traffic_stops(self, **kwargs):
-        cache_key = f'traffic_stops__{slug_kwargs(kwargs)}'
-        results = redis_cache.get(cache_key)
 
-        if results:
-            return results
-
-        q_list = qb(**kwargs)
+    @state_and_department
+    def traffic_stops_by_gender(self, query_parameters):
         column_list = ["Traffic Stops"]
         sex_code_dict = {'M': 'Male', 'F': 'Female'}
-        if q_list:
-            total_count = self.filter(reduce(operator.and_,q_list)).count()
-            if total_count == 0:
-                return [{'Results': 'No Results Found'}]
-            total_countby_race = self.exclude(subject_ethnicity_code='H').filter(reduce(operator.and_,q_list)).\
-                values('subject_race_code').annotate(count=Count('subject_race_code'))
-            total_countby_ethnicity = self.filter(reduce(operator.and_,q_list)).\
-                values('subject_ethnicity_code').annotate(count=Count('subject_ethnicity_code'))
-            total_count_by_gender = self.filter(reduce(operator.and_,q_list)).exclude(subject_sex_code='').\
-                values('subject_sex_code').annotate(count=Count('subject_sex_code'))
-        else:
-            total_count = self.count()
-            total_countby_race = self.exclude(subject_ethnicity_code='H').\
-                values('subject_race_code').annotate(count=Count('subject_race_code'))
-            total_countby_ethnicity = self.\
-                values('subject_ethnicity_code').annotate(count=Count('subject_ethnicity_code'))
-            total_count_by_gender = self.values('subject_sex_code').exclude(subject_sex_code='').\
-                    annotate(count=Count('subject_sex_code'))
 
-        gl = [{'count': x['count'], 'column': 'Traffic Stops',
-                'race/ethnicity': sex_code_dict[x['subject_sex_code']], 'percent': round(100.0*(1.0*x['count'])/ total_count,1)}
-            for x in total_count_by_gender]
+        try:
+            filtered_partial = self.filter(reduce(operator.and_, query_parameters))
+        except TypeError:
+            filtered_partial = self
+
+        # Get town values
+        total_count = filtered_partial.count()
+        if total_count == 0:
+            return [{'Results': 'No Results Found'}]
+
+        count_by_gender = filtered_partial.exclude(subject_sex_code=''). \
+            values('subject_sex_code').annotate(count=Count('subject_sex_code'))
+
+        results_list = [{'count': x['count'], 'column': 'Traffic Stops',
+                         'gender': sex_code_dict[x['subject_sex_code']],
+                         'percent': round(100.0 * (1.0 * x['count']) / total_count, 1)}
+                        for x in count_by_gender]
+
+        missing_gender = new_find_missing('column', 'gender', column_list, ['Male', 'Female'], results_list)
+        for e in missing_gender:
+            results_list.append({'count': -999, 'column': e[0], 'gender': e[1], 'percent': -999})
+
+        return results_list
+
+
+    @state_and_department
+    def traffic_stops(self, query_parameters):
+        column_list = ["Traffic Stops"]
+        try:
+            filtered_partial = self.filter(reduce(operator.and_, query_parameters))
+        except TypeError:
+            filtered_partial = self
+
+        total_count = filtered_partial.count()
+        if total_count == 0:
+            return [{'Results': 'No Results Found'}]
+        total_countby_race = filtered_partial.exclude(subject_ethnicity_code='H'). \
+            values('subject_race_code').annotate(count=Count('subject_race_code'))
+        total_countby_ethnicity = filtered_partial.values('subject_ethnicity_code') \
+            .annotate(count=Count('subject_ethnicity_code'))
+
         rl = [{'count': x['count'], 'column': 'Traffic Stops',
-                'race/ethnicity': race_choices[x['subject_race_code']],
-                'percent': round(100.0*(1.0*x['count'])/ total_count,1)}
-            for x in total_countby_race]
-        el = [{'count': x['count'], 'column': 'Traffic Stops',\
-                'race/ethnicity': ethnicity_choices[x['subject_ethnicity_code']],
-                'percent': round(100.0*(1.0*x['count'])/ total_count,1)}
-            for x in total_countby_ethnicity]
+               'race/ethnicity': race_choices[x['subject_race_code']],
+               'percent': round(100.0 * (1.0 * x['count']) / total_count, 1)}
+              for x in total_countby_race]
+        el = [{'count': x['count'], 'column': 'Traffic Stops',
+               'race/ethnicity': ethnicity_choices[x['subject_ethnicity_code']],
+               'percent': round(100.0 * (1.0 * x['count']) / total_count, 1)}
+              for x in total_countby_ethnicity]
         tl = [{'count': total_count, 'column': 'Traffic Stops', 'race/ethnicity': 'Total', 'percent': 100.0}]
-        missing_gender = new_find_missing('column', 'race/ethnicity', column_list, ['Male', 'Female'], gl)
+
         missing_race = new_find_missing('column', 'race/ethnicity', column_list, race_list, rl)
         missing_ethnicity = new_find_missing('column', 'race/ethnicity', column_list, ethnicity_list, el)
-        for e in missing_gender:
-            gl.append({'count': -999, 'column': e[0], 'race/ethnicity': e[1], 'percent': -999})
+
         for e in missing_race:
             rl.append({'count': -999, 'column': e[0], 'race/ethnicity': e[1], 'percent': -999})
         for e in missing_ethnicity:
             el.append({'count': -999, 'column': e[0], 'race/ethnicity': e[1], 'percent': -999})
-        l = tl + rl + el + gl
-        redis_cache.set(cache_key, l)
-        return l
+        results_list = tl + rl + el
+        return results_list
 
-    def stop_enforcement(self,**kwargs):
-        """Generate counts of enforcement by technique_code
-
-        Keyword arguments:
-        department -- the plain text department name
-        dateRange -- a list of datetime.datetime objects
-        """
-
-        cache_key = f'stop_enforcement__{slug_kwargs(kwargs)}'
-        results = redis_cache.get(cache_key)
-
-        if results:
-            return results
+    @state_and_department
+    def stop_enforcement(self, query_parameters):
 
         code_choices = {'G': "General", "B": "Blind", "S": "Spot-Check"}
-        q_list = qb(**kwargs)
-        if q_list:
-            total_count = self.filter(reduce(operator.and_,q_list)).exclude(technique_code="").count()
-            if total_count == 0:
-                return [{'Results': 'No Results Found'}]
-            qs = self.filter(reduce(operator.and_,q_list)).exclude(technique_code="").values('technique_code')\
-                .annotate(num_by_tech=Count('technique_code'))
-            qs = [x for x in qs if x['technique_code'] is not None]
-        else:
-            total_count = self.exclude(technique_code="").count()
-            qs = self.exclude(technique_code="").values('technique_code')\
-                .annotate(num_by_tech=Count('technique_code'))
-            qs = [x for x in qs if x['technique_code'] is not None]
-        l = [{'column': code_choices[x['technique_code']], 'count': x['num_by_tech'], 'percent': round(100.0*(1.0*x['num_by_tech']) / total_count, 1)}
-            for x in qs]
-        redis_cache.set(cache_key, l)
-        return l
+        try:
+            filtered_partial = self.filter(reduce(operator.and_, query_parameters))
+        except TypeError:
+            filtered_partial = self
+
+        total_count = filtered_partial.exclude(technique_code="").count()
+        if total_count == 0:
+            return [{'Results': 'No Results Found'}]
+        qs = filtered_partial.exclude(technique_code="").values('technique_code') \
+            .annotate(num_by_tech=Count('technique_code'))
+
+        results = [{'column': code_choices[x['technique_code']], 'count': x['num_by_tech'],
+                    'percent': round(100.0 * (1.0 * x['num_by_tech']) / total_count, 1)}
+                   for x in qs if x['technique_code'] is not None]
+
+        return results
 
     def resident(self, **kwargs):
 

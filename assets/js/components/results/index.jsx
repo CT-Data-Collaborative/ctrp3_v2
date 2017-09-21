@@ -11,8 +11,29 @@ import {
   buildSearchInformationTable,
   buildStopAuthorityTable
 } from './helpers.jsx';
+import moment from 'moment';
 
-import MonthChart from "../linechart";
+import TimeSeriesChart from "../linechart";
+
+function parseDate(dateString) {
+  let [month, year] = dateString.split(' ');
+  return new Date(Date.parse(month + "1, " + year));
+}
+
+function parseHour(hourString) {
+  let [startHour, endHour] = hourString.split(' to ');
+  const timeOfDay = startHour.slice(-2);
+  let hour = startHour.slice(0, startHour.indexOf(timeOfDay));
+  return new Date(Date.parse("January 1, 2017 " + hour + ":00 " + timeOfDay ))
+}
+
+function hourTickFormatter(tick) {
+  return moment(tick).format("LT")
+}
+
+function monthTickFormatter(tick) {
+  return moment(tick).format("MM/YY");
+}
 
 class Results extends React.Component {
   constructor(props) {
@@ -31,7 +52,7 @@ class Results extends React.Component {
         <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-md">
           <h5>Traffic Stops</h5>
           <p>Summary of traffic stops by race, ethnicity and gender.</p>
-          {buildStopTable(data['Traffic Stops'])}
+          {buildStopTable(data['Traffic Stops'][0]['dept'])}
         </div>
       )
 
@@ -45,7 +66,11 @@ class Results extends React.Component {
       return (
         <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-sm">
           <h5>Stop Enforcement Method</h5>
-          <p>Summarizes the enforcement method used to conduct the traffic stop. Blind Enforcement include for example: radar/laser, license plate readers, DUI checkpoints, and truck weighing operations. Spot check includes: seat belt use, cellphone use, or any other activity except DUI checks. For Spot checks, traffic stop information is only collected when action is taken. General includes all other stops. Percentages are derived from the total number of people stopped.</p>
+          <p>Summarizes the enforcement method used to conduct the traffic stop. Blind Enforcement include for example:
+            radar/laser, license plate readers, DUI checkpoints, and truck weighing operations. Spot check includes:
+            seat belt use, cellphone use, or any other activity except DUI checks. For Spot checks, traffic stop
+            information is only collected when action is taken. General includes all other stops. Percentages are
+            derived from the total number of people stopped.</p>
           {buildStopEnforcementMethodTable(data['Stop Enforcement Method'])}
         </div>
       )
@@ -59,7 +84,8 @@ class Results extends React.Component {
       return (
         <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg">
           <h5>Nature of the Traffic Stop</h5>
-          <p>Police are required to identify the nature of the stop in one of three categories: 1) Investigative, Criminal; 2) Violation, Motor Vehicle; or 3) Equipment, Motor Vehicle.</p>
+          <p>Police are required to identify the nature of the stop in one of three categories: 1) Investigative,
+            Criminal; 2) Violation, Motor Vehicle; or 3) Equipment, Motor Vehicle.</p>
           {buildNatureOfStopTable(data['Nature of the Traffic Stop'])}
         </div>
       )
@@ -73,7 +99,14 @@ class Results extends React.Component {
       return (
         <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-sm">
           <h4>Stops by Month</h4>
-          <MonthChart data={data['Stops by Month']} title="Stops by Month"/>
+          <TimeSeriesChart
+            data={data['Stops by Month']}
+            title="Stops by Month"
+            datetimeParser={parseDate}
+            yAccessor="count"
+            xAccessor="month"
+            xTickFormatter={monthTickFormatter}
+          />
           {buildStopsByMonthTable(data['Stops by Month'])}
         </div>
       )
@@ -87,6 +120,14 @@ class Results extends React.Component {
       return (
         <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-sm">
           <h4>Stop by Hour</h4>
+          <TimeSeriesChart
+            data={data['Stops by Hour']}
+            title="Stops by Hour"
+            datetimeParser={parseHour}
+            yAccessor="count"
+            xAccessor="hour"
+            xTickFormatter={hourTickFormatter}
+          />
           {buildStopsByHourTable(data['Stops by Hour'])}
         </div>
       )
@@ -100,7 +141,8 @@ class Results extends React.Component {
       return (
         <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg">
           <h5>Age of the Driver</h5>
-          <p>Summarizes the age of the driver stopped into four age groups by race and ethnicity. Percentages are derived from the total number of people stopped.</p>
+          <p>Summarizes the age of the driver stopped into four age groups by race and ethnicity. Percentages are
+            derived from the total number of people stopped.</p>
           {buildAgeOfDriverTable(data['Age of the Driver'])}
         </div>
       )
@@ -140,7 +182,8 @@ class Results extends React.Component {
       return (
         <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg">
           <h5>Search Information</h5>
-          <p>Summarizes car searches, the authority for the search and whether contraband was found as a result of the search. Percentages are derived from the total number of people stopped for each race/ethnicity.</p>
+          <p>Summarizes car searches, the authority for the search and whether contraband was found as a result of the
+            search. Percentages are derived from the total number of people stopped for each race/ethnicity.</p>
           {buildSearchInformationTable(data['Search Information'])}</div>)
     } else {
       return <div></div>
@@ -154,13 +197,15 @@ class Results extends React.Component {
         <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-lg">
           <h5>Statutory Authority Cited for Stop</h5>
           <p>Police officers are required to identify the statutory authority for the stop. These categories are
-            aggregations. In addition, these categories do not reflect additional citations issued during the course of the stop.</p>
+            aggregations. In addition, these categories do not reflect additional citations issued during the course of
+            the stop.</p>
           {buildStopAuthorityTable(data['Statutory Authority Cited for Stop'])}
         </div>
 
       )
     }
   }
+
   componentWillReceiveProps(nextProps) {
     let display = {};
 
@@ -180,15 +225,15 @@ class Results extends React.Component {
     return (
       <div className="ctdata-ctrp3-results">
         {this.trafficStopTable(this.props.apiData)}
-        {this.stopEnforcementTable(this.props.apiData)}
-        {this.natureOfStopsTable(this.props.apiData)}
-        {this.stopsByMonthTable(this.props.apiData)}
-        {this.stopsByHourTable(this.props.apiData)}
-        {this.ageOfDriverTable(this.props.apiData)}
-        {this.dispositionTable(this.props.apiData)}
-        {this.residencyTable(this.props.apiData)}
-        {this.searchInformationTable(this.props.apiData)}
-        {this.statutoryAuthorityTable(this.props.apiData)}
+        {/*{this.stopEnforcementTable(this.props.apiData)}*/}
+        {/*{this.natureOfStopsTable(this.props.apiData)}*/}
+        {/*{this.stopsByMonthTable(this.props.apiData)}*/}
+        {/*{this.stopsByHourTable(this.props.apiData)}*/}
+        {/*{this.ageOfDriverTable(this.props.apiData)}*/}
+        {/*{this.dispositionTable(this.props.apiData)}*/}
+        {/*{this.residencyTable(this.props.apiData)}*/}
+        {/*{this.searchInformationTable(this.props.apiData)}*/}
+        {/*{this.statutoryAuthorityTable(this.props.apiData)}*/}
       </div>)
 
   }

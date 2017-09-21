@@ -103,6 +103,7 @@ export function buildStopTable(data) {
   return makeTable(columns, data)
 }
 
+
 export function buildStopEnforcementMethodTable(data) {
   const columns = [{
     Header: 'Enforcement Method',

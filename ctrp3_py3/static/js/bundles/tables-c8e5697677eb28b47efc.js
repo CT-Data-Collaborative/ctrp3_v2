@@ -26717,11 +26717,34 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__helpers_jsx__ = __webpack_require__(543);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__linechart__ = __webpack_require__(549);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_moment__ = __webpack_require__(552);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_moment___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_moment__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__linechart__ = __webpack_require__(549);
 
 
 
 
+
+
+function parseDate(dateString) {
+  let [month, year] = dateString.split(' ');
+  return new Date(Date.parse(month + "1, " + year));
+}
+
+function parseHour(hourString) {
+  let [startHour, endHour] = hourString.split(' to ');
+  const timeOfDay = startHour.slice(-2);
+  let hour = startHour.slice(0, startHour.indexOf(timeOfDay));
+  return new Date(Date.parse("January 1, 2017 " + hour + ":00 " + timeOfDay));
+}
+
+function hourTickFormatter(tick) {
+  return __WEBPACK_IMPORTED_MODULE_2_moment___default()(tick).format("LT");
+}
+
+function monthTickFormatter(tick) {
+  return __WEBPACK_IMPORTED_MODULE_2_moment___default()(tick).format("MM/YY");
+}
 
 class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
   constructor(props) {
@@ -26748,7 +26771,7 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
           null,
           'Summary of traffic stops by race, ethnicity and gender.'
         ),
-        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["h" /* buildStopTable */])(data['Traffic Stops'])
+        Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["h" /* buildStopTable */])(data['Traffic Stops'][0]['dept'])
       );
     } else {
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('div', null);
@@ -26809,7 +26832,14 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
           null,
           'Stops by Month'
         ),
-        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_2__linechart__["a" /* default */], { data: data['Stops by Month'], title: 'Stops by Month' }),
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__linechart__["a" /* default */], {
+          data: data['Stops by Month'],
+          title: 'Stops by Month',
+          datetimeParser: parseDate,
+          yAccessor: 'count',
+          xAccessor: 'month',
+          xTickFormatter: monthTickFormatter
+        }),
         Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["j" /* buildStopsByMonthTable */])(data['Stops by Month'])
       );
     } else {
@@ -26827,6 +26857,14 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
           null,
           'Stop by Hour'
         ),
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__linechart__["a" /* default */], {
+          data: data['Stops by Hour'],
+          title: 'Stops by Hour',
+          datetimeParser: parseHour,
+          yAccessor: 'count',
+          xAccessor: 'hour',
+          xTickFormatter: hourTickFormatter
+        }),
         Object(__WEBPACK_IMPORTED_MODULE_1__helpers_jsx__["i" /* buildStopsByHourTable */])(data['Stops by Hour'])
       );
     } else {
@@ -26936,6 +26974,7 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
       );
     }
   }
+
   componentWillReceiveProps(nextProps) {
     let display = {};
 
@@ -26954,16 +26993,7 @@ class Results extends __WEBPACK_IMPORTED_MODULE_0_react___default.a.Component {
     return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
       'div',
       { className: 'ctdata-ctrp3-results' },
-      this.trafficStopTable(this.props.apiData),
-      this.stopEnforcementTable(this.props.apiData),
-      this.natureOfStopsTable(this.props.apiData),
-      this.stopsByMonthTable(this.props.apiData),
-      this.stopsByHourTable(this.props.apiData),
-      this.ageOfDriverTable(this.props.apiData),
-      this.dispositionTable(this.props.apiData),
-      this.residencyTable(this.props.apiData),
-      this.searchInformationTable(this.props.apiData),
-      this.statutoryAuthorityTable(this.props.apiData)
+      this.trafficStopTable(this.props.apiData)
     );
   }
 }
@@ -29725,29 +29755,21 @@ exports.default = ReactTablePagination;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_semiotic__ = __webpack_require__(930);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_semiotic___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_semiotic__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_d3_scale__ = __webpack_require__(1329);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_moment__ = __webpack_require__(552);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_moment___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_moment__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_d3_shape__ = __webpack_require__(795);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_d3_shape__ = __webpack_require__(795);
 
 
 
 
 
-
-class MonthChart extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
+class TimeSeriesChart extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
   constructor(props) {
     super(props);
-    this.parseDate = this.parseDate.bind(this);
-  }
-
-  parseDate(dateString) {
-    let [month, year] = dateString.split(' ');
-    return new Date(Date.parse(month + "1, " + year));
+    this.datetimeParser = props.datetimeParser.bind(this);
   }
 
   render() {
     const data = { data: this.props.data };
-
+    console.log(this.props.xAccessor);
     return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
       'div',
       { style: { width: '100%', height: '200px', marginBottom: '4rem' } },
@@ -29755,30 +29777,30 @@ class MonthChart extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
         size: [undefined, 250],
         responsiveWidth: true,
         responsiveHeight: false,
-        lineType: { type: 'line', interpolator: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["a" /* curveMonotoneX */] },
+        lineType: { type: 'line', interpolator: __WEBPACK_IMPORTED_MODULE_3_d3_shape__["a" /* curveMonotoneX */] },
         lines: data,
         lineDataAccessor: 'data',
         lineStyle: d => ({ fill: '#4670A7', fillOpacity: 0.5, stroke: '#4670A7', strokeWidth: '3px' }),
-        xAccessor: d => this.parseDate(d.month),
-        yAccessor: "count",
+        xAccessor: d => this.datetimeParser(d[this.props.xAccessor]),
+        yAccessor: d => d[this.props.yAccessor],
         yExtent: [0, undefined],
         xScaleType: Object(__WEBPACK_IMPORTED_MODULE_2_d3_scale__["a" /* scaleTime */])(),
         margin: { "top": 60, "bottom": 65, "left": 90, "right": 20 },
-        axes: [{ orient: 'left', label: { name: "Stops", location: "outside", anchor: "start", locationDistance: 60 }, ticks: 3, className: 'yscale', tickFormat: d => d }, { orient: 'bottom', className: 'xscale', ticks: 6, tickFormat: d => __WEBPACK_IMPORTED_MODULE_3_moment___default()(d).format("MM/YY") }],
+        axes: [{ orient: 'left', label: { name: "Stops", location: "outside", anchor: "start", locationDistance: 60 }, className: 'yscale', tickFormat: d => d }, { orient: 'bottom', className: 'xscale', ticks: 6, tickFormat: d => this.props.xTickFormatter(d) }],
         hoverAnnotation: true,
         tooltipContent: d => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
           'div',
           null,
-          d.month,
+          d[this.props.xAccessor],
           ': ',
-          d.count
+          d[this.props.yAccessor]
         )
       })
     );
   }
 }
 
-/* harmony default export */ __webpack_exports__["a"] = (MonthChart);
+/* harmony default export */ __webpack_exports__["a"] = (TimeSeriesChart);
 
 /***/ }),
 /* 550 */,
