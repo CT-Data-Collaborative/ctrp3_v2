@@ -12,6 +12,8 @@ import {
   buildStopAuthorityTable
 } from './helpers.jsx';
 
+import MonthChart from "../linechart";
+
 class Results extends React.Component {
   constructor(props) {
     super(props);
@@ -71,6 +73,7 @@ class Results extends React.Component {
       return (
         <div className="ctdata-ctrp3-results-table ctdata-ctrp3-results-table-sm">
           <h4>Stops by Month</h4>
+          <MonthChart data={data['Stops by Month']} title="Stops by Month"/>
           {buildStopsByMonthTable(data['Stops by Month'])}
         </div>
       )

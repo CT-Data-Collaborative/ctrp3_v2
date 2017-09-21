@@ -416,12 +416,8 @@ export function buildSearchInformationTable(data) {
 }
 
 export function buildStopAuthorityTable(data) {
-  // const column_names = ['Cell Phone', 'Defective Lights', 'Display of Plates', 'Equipment Violation',
-  //   'Moving Violation', 'Other', 'Registration', 'Seatbelt', 'Speed Related', ' Suspended License',
-  //   'Traffic Control Signal', 'Window Tint'];
   const column_names = ["White Non-Hispanic", "Black Non-Hispanic", "Asian Non-Hispanic", "Hispanic",
     "Indian American / Alaskan Native Non-Hispanic", "Total"];
-  console.log(data);
   const columns = simpleColumnHelper(column_names, "authority");
   return makeTable(columns, data)
 }

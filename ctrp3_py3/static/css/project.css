@@ -357,3 +357,17 @@ html, body {
   .ctdata-ctrp3-homepage-controls h1, .ctdata-ctrp3-homepage-controls h2, .ctdata-ctrp3-homepage-controls h3, .ctdata-ctrp3-homepage-controls h3 {
     padding-bottom: 16px;
     padding-bottom: 1rem; }
+
+.xscale .tick-line {
+  stroke-opacity: 0; }
+
+.xscale text {
+  font-size: 12px; }
+
+.yscale .tick-line {
+  stroke: #95aabc;
+  stroke-width: 1px;
+  stroke-opacity: .25; }
+
+.yscale text {
+  font-size: 12px; }

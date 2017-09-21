@@ -1,0 +1,20 @@
+.xscale {
+  .tick-line{stroke-opacity:0}
+
+  text {
+    font-size: 12px;
+  }
+}
+
+.yscale {
+  .tick-line{
+    stroke: #95aabc;
+    stroke-width: 1px;
+    stroke-opacity: .25;
+  }
+
+  text {
+    font-size: 12px;
+  }
+}
+

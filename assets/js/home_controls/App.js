@@ -39,7 +39,7 @@ class App extends Component {
         <div className="col-md-6 offset-md-3">
           <div className="row ctdata-ctrp3-homepage-controls">
             <h3 className="ctdata-ctrp3-homepage-controls--header" >Explore by department and time period</h3>
-            <Department departments={window.departments} selectDept={this.updateSelectedDept} width={'full'}/>
+            <Department departments={window.departments} selectedDepartmentType={'Municipal'} selectDept={this.updateSelectedDept} width={'full'}/>
             <DateRange months={window.months} selectStartDate={this.updateStartDate} selectedStartDate={this.state.startDate}
                        selectEndDate={this.updateEndDate} selectedEndDate={this.state.endDate} width={'full'}/>
 
